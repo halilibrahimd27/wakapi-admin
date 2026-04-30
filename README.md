@@ -1,18 +1,27 @@
-# Wakapi Admin — Self-Hosted Coding Time Analytics Stack
+<div align="center">
 
-> **Tek `docker compose up` ile;** kendi sunucunuzda çalışan Wakapi
-> [(github.com/muety/wakapi)](https://github.com/muety/wakapi) instance'ı,
-> üzerine geliştirdiğimiz **özel admin paneli**, **PostgreSQL**, **pgAdmin**,
-> **Prometheus** ve **Grafana** dashboardları.
->
-> WakaTime alternatifi olarak ekibinizin/şirketinizin kodlama süresini, dil
-> dağılımını, projelerini ve "şu an kim ne yapıyor"u tek pencereden takip
-> etmenizi sağlar.
+# 📊 Wakapi Admin
 
-![Stack](https://img.shields.io/badge/stack-Wakapi%20%2B%20Postgres%20%2B%20Flask%20%2B%20Grafana-1f6feb?style=flat-square)
-![Python](https://img.shields.io/badge/admin-Python%203.12-3776ab?style=flat-square&logo=python&logoColor=white)
-![Docker](https://img.shields.io/badge/deploy-Docker%20Compose-2496ed?style=flat-square&logo=docker&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+### *Self-Hosted Coding Time Analytics Stack — WakaTime alternatifi, ekipler için*
+
+**Wakapi · PostgreSQL · custom Flask admin paneli · Prometheus · Grafana** — tek `docker compose up` ile
+
+[![GitHub Stars](https://img.shields.io/github/stars/halilibrahimd27/wakapi-admin?style=flat-square&color=yellow&logo=github)](https://github.com/halilibrahimd27/wakapi-admin/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/halilibrahimd27/wakapi-admin?style=flat-square&color=blue&logo=github)](https://github.com/halilibrahimd27/wakapi-admin/network/members)
+[![Python](https://img.shields.io/badge/admin-Python%203.12-3776ab?style=flat-square&logo=python&logoColor=white)](#)
+[![Docker](https://img.shields.io/badge/deploy-Docker%20Compose-2496ed?style=flat-square&logo=docker&logoColor=white)](#)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+
+> **⭐ Ekibinde kullanıyorsan yıldız bırak** — geliştirme hızlanıyor.
+
+</div>
+
+---
+
+> Kendi sunucunda çalışan [Wakapi](https://github.com/muety/wakapi) instance'ı + üzerine geliştirilmiş **özel admin paneli**:
+> Realtime active users · domain tag system · AI editor detection
+> (Cursor / Copilot / Claude Code / Codeium...) · izin/düzeltme yönetimi ·
+> PDF rapor · leaderboard auto-refresh.
 
 ---
 
@@ -451,5 +460,25 @@ ait tüm haklar **Ferdinand Mütsch (@muety)** ve katkıcılarına aittir.
 
 Issue'lar ve PR'lar için: <https://github.com/halilibrahimd27/wakapi-admin/issues>
 
+[`SECURITY.md`](SECURITY.md) ve [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) okunmalı.
+
 > Bir özellik eklerken `admin/app.py`'da yorumların **Türkçe**, kullanıcıya
 > görünen UI metinlerinin de **Türkçe** olduğuna dikkat edin (proje konvansiyonu).
+
+---
+
+<div align="center">
+
+## 🌟 Destek olmak istersen
+
+| Süre | Yardım |
+|---|---|
+| 5 sn | **⭐ Star** |
+| 30 sn | Twitter/LinkedIn'de paylaş ("WakaTime self-hosted, ekip analytics'i hazır") |
+| 5 dk | Issue aç (eksik bulduğun feature) |
+| 30 dk | [Yeni AI editor detection](../../issues/new/choose) ekle (Cursor, Continue, vb.) |
+| 2 saat | Yeni dashboard widget'ı yaz (rapor, leaderboard, stats) |
+
+[![Star History Chart](https://api.star-history.com/svg?repos=halilibrahimd27/wakapi-admin&type=Date)](https://star-history.com/#halilibrahimd27/wakapi-admin&Date)
+
+</div>

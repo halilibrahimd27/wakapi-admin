@@ -1,0 +1,63 @@
+name: 🐛 Bug bildirimi
+description: Wakapi stack veya custom admin panelinde bir sorun
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Hangi bileşen?
+      options:
+        - "Wakapi (upstream)"
+        - "Custom Admin Panel (Flask)"
+        - "PostgreSQL stack"
+        - "Prometheus / Grafana"
+        - "Backup / cron scriptler"
+        - "Domain Tag sistemi"
+        - "Realtime active users"
+        - "AI editor detection"
+        - "Bilmiyorum"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Yeniden üretme adımları
+      placeholder: |
+        1. docker compose up -d
+        2. http://localhost:8080 → admin panel
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Beklenen davranış
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Ne oldu? (loglar, hata mesajları)
+      render: shell
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Ortam
+      placeholder: |
+        - OS: Ubuntu 22.04
+        - Docker: 24.0
+        - Wakapi version: latest
+        - Reverse proxy: Caddy / Nginx / yok
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Doğrulama
+      options:
+        - label: README'deki "Sorun Giderme" bölümünü kontrol ettim
+          required: true

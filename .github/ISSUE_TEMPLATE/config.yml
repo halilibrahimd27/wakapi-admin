@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/halilibrahimd27/wakapi-admin/discussions
+    about: Genel sohbet, ekibinde nasıl kullandığın, deneyim paylaşımı
+  - name: 📚 Sorun Giderme
+    url: https://github.com/halilibrahimd27/wakapi-admin#sorun-giderme
+    about: Issue açmadan önce — yaygın sorunlar burada çözülmüş olabilir
+  - name: 🔼 Wakapi (upstream) issue
+    url: https://github.com/muety/wakapi/issues
+    about: Sorun custom admin panelinde değil, Wakapi'nin kendisinde ise

@@ -1,0 +1,38 @@
+name: 🤖 AI editor detection ekleme
+description: Yeni bir AI editor / asistan tespitini önerin
+title: "[AI Detection] "
+labels: ["enhancement", "ai-detection"]
+body:
+  - type: input
+    id: editor
+    attributes:
+      label: Editor / asistan adı
+      placeholder: "Cursor, Continue, Codeium, vb."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: detection
+    attributes:
+      label: Tespit yöntemi
+      options:
+        - "Editor adı (heartbeat 'editor' alanı)"
+        - "User agent string'i"
+        - "Wakapi 'category' alanı (örn: 'ai coding')"
+        - "Birden fazla"
+
+  - type: textarea
+    id: signature
+    attributes:
+      label: Tespit imzası (string'ler)
+      placeholder: |
+        Editor: cursor, windsurf, trae
+        UA: claudecode, copilot, codeium, tabnine, supermaven, cody
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: Kaynak / referans
+      placeholder: "Editor'un dokümanından, packet capture'dan, vb."

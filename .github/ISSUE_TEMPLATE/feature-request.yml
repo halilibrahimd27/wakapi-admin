@@ -1,0 +1,40 @@
+name: 💡 Feature önerisi
+description: Admin panel veya stack için yeni özellik önerisi
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Hangi alanda?
+      options:
+        - "Admin panel — yeni rapor / dashboard widget"
+        - "Domain Tag sistemi — yeni tag türü"
+        - "AI editor detection — yeni editor desteği"
+        - "Realtime panel — yeni metrik"
+        - "İzin / düzeltme yönetimi"
+        - "Leaderboard"
+        - "PDF rapor"
+        - "Stack — yeni servis (örn: Loki, Tempo)"
+        - "Diğer"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Hangi sorunu çözüyor?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Önerilen çözüm
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Katkı niyeti
+      options:
+        - label: Bu feature'ı ben yazmak istiyorum (PR açacağım)
