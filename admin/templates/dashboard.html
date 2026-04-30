@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wakapi Admin</title>
+<style>
+/* ── RESET & BASE ── */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0f1a;color:#e2e8f0;min-height:100vh;display:flex;-webkit-font-smoothing:antialiased}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#475569}
+
+/* ── SIDEBAR ── */
+.sidebar{width:240px;background:linear-gradient(180deg,#111827 0%,#0f172a 100%);border-right:1px solid #1e293b;min-height:100vh;position:fixed;top:0;left:0;z-index:100;display:flex;flex-direction:column}
+.sidebar-logo{padding:24px 22px;border-bottom:1px solid #1e293b;font-size:17px;font-weight:700;letter-spacing:-0.3px}
+.sidebar-logo span{color:#38bdf8;background:linear-gradient(135deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sidebar-nav{padding:16px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 22px;color:#64748b;cursor:pointer;transition:all .2s ease;font-size:13.5px;text-decoration:none;border-left:3px solid transparent;font-weight:500;margin:2px 8px;border-radius:0 8px 8px 0}
+.nav-item:hover{background:rgba(56,189,248,.06);color:#cbd5e1}
+.nav-item.active{background:linear-gradient(90deg,rgba(56,189,248,.12),rgba(56,189,248,.04));color:#38bdf8;border-left-color:#38bdf8}
+.nav-item .icon{font-size:17px;width:24px;text-align:center}
+.sidebar-footer{padding:18px 22px;border-top:1px solid #1e293b;font-size:11px;color:#334155}
+
+/* ── MAIN AREA ── */
+.main{margin-left:240px;flex:1;min-height:100vh;background:#0a0f1a}
+.topbar{background:rgba(17,24,39,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #1e293b;padding:16px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.topbar h2{font-size:16px;font-weight:600;letter-spacing:-0.2px}
+.topbar .meta{font-size:12px;color:#475569}
+.topbar .refresh-btn{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border:none;padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;transition:all .2s;box-shadow:0 2px 8px rgba(59,130,246,.25)}
+.topbar .refresh-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.35)}
+.content{padding:28px}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:linear-gradient(135deg,#111827,#1e293b);border-radius:14px;padding:20px;border:1px solid #1e293b;position:relative;transition:all .25s ease;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;opacity:.8}
+.stat-card:hover{transform:translateY(-2px);border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.stat-card .label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:500}
+.stat-card .value{font-size:28px;font-weight:700;letter-spacing:-0.5px}
+.stat-card .sub{font-size:11px;color:#475569;margin-top:6px}
+.green .value{color:#4ade80}.green::before{background:linear-gradient(90deg,#4ade80,#22c55e)}
+.blue .value{color:#38bdf8}.blue::before{background:linear-gradient(90deg,#38bdf8,#0ea5e9)}
+.orange .value{color:#fb923c}.orange::before{background:linear-gradient(90deg,#fb923c,#f97316)}
+.red .value{color:#f87171}.red::before{background:linear-gradient(90deg,#f87171,#ef4444)}
+.purple .value{color:#a78bfa}.purple::before{background:linear-gradient(90deg,#a78bfa,#8b5cf6)}
+.teal .value{color:#2dd4bf}.teal::before{background:linear-gradient(90deg,#2dd4bf,#14b8a6)}
+.pink .value{color:#f472b6}.pink::before{background:linear-gradient(90deg,#f472b6,#ec4899)}
+.delta{font-size:11px;font-weight:600;margin-left:6px}
+.delta.up{color:#4ade80}.delta.down{color:#f87171}
+
+/* ── SECTIONS ── */
+.section{background:#111827;border-radius:14px;border:1px solid #1e293b;margin-bottom:24px;overflow:hidden;transition:border-color .2s}
+.section:hover{border-color:#334155}
+.section-header{padding:16px 20px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
+.section-header h3{font-size:14px;font-weight:600;letter-spacing:-0.2px}
+.section-header select{background:#0a0f1a;border:1px solid #1e293b;color:#e2e8f0;padding:6px 10px;border-radius:8px;font-size:12px;cursor:pointer;transition:border-color .2s}
+.section-header select:hover{border-color:#334155}
+
+/* ── TABLES ── */
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;padding:12px 16px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#475569;border-bottom:1px solid #1e293b;background:#0a0f1a;font-weight:600}
+tbody td{padding:12px 16px;border-bottom:1px solid rgba(30,41,59,.5);font-size:13px}
+tbody tr{transition:all .15s ease}
+tbody tr:hover{background:rgba(56,189,248,.04)}
+.user-link{font-weight:600;color:#38bdf8;cursor:pointer;text-decoration:none;transition:color .15s}
+.user-link:hover{color:#7dd3fc}
+
+/* ── TAGS ── */
+.tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10px;margin:1.5px;font-weight:500;transition:transform .1s}
+.tag:hover{transform:scale(1.05)}
+.tag-project{background:rgba(59,130,246,.15);color:#93c5fd;border:1px solid rgba(59,130,246,.2)}
+.tag-lang{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.2)}
+.tag-editor{background:rgba(139,92,246,.15);color:#c4b5fd;border:1px solid rgba(139,92,246,.2)}
+.tag-user{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.2)}
+.tag-ai{background:rgba(236,72,153,.15);color:#f9a8d4;font-weight:600;border:1px solid rgba(236,72,153,.2)}
+
+/* ── STATUS ── */
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.status-dot.active{background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.5)}
+.status-dot.inactive{background:#334155}
+.hb-bar{display:inline-block;height:5px;border-radius:3px;background:linear-gradient(90deg,#38bdf8,#818cf8);min-width:2px}
+.time-range{font-size:12px;color:#64748b}
+
+/* ── TABS ── */
+.tabs{display:flex;border-bottom:1px solid #1e293b;gap:2px;padding:0 4px}
+.tab{padding:12px 20px;font-size:13px;cursor:pointer;color:#64748b;border-bottom:2px solid transparent;transition:all .2s;font-weight:500}
+.tab:hover{color:#cbd5e1;background:rgba(56,189,248,.04)}
+.tab.active{color:#38bdf8;border-bottom-color:#38bdf8}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* ── BAR CHARTS ── */
+.bar-chart{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-label{width:120px;font-size:12px;color:#cbd5e1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.bar-fill{height:24px;border-radius:6px;min-width:2px;display:flex;align-items:center;padding-left:10px;font-size:10px;color:#fff;font-weight:600;transition:width .4s ease}
+.bar-fill.project{background:linear-gradient(90deg,#1e40af,#3b82f6)}
+.bar-fill.lang{background:linear-gradient(90deg,#166534,#22c55e)}
+
+/* ── HOURLY CHART ── */
+.hourly-chart{display:flex;align-items:flex-end;gap:2px;height:70px}
+.hourly-bar{flex:1;background:linear-gradient(180deg,#3b82f6,#1e40af);border-radius:3px 3px 0 0;min-height:2px;transition:all .2s}
+.hourly-bar:hover{background:linear-gradient(180deg,#60a5fa,#3b82f6);transform:scaleY(1.05);transform-origin:bottom}
+.hourly-labels{display:flex;gap:2px;margin-top:4px}
+.hourly-labels span{flex:1;text-align:center;font-size:8px;color:#334155}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:200;justify-content:center;align-items:flex-start;padding:30px;overflow-y:auto}
+.modal-overlay.active{display:flex}
+.modal{background:#111827;border-radius:16px;border:1px solid #1e293b;width:100%;max-width:1100px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.6)}
+.modal-header{padding:18px 22px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(17,24,39,.95);backdrop-filter:blur(8px);z-index:10;border-radius:16px 16px 0 0}
+.modal-header h2{font-size:17px;font-weight:600}
+.close-btn{background:none;border:1px solid #334155;color:#94a3b8;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.close-btn:hover{background:#1e293b;color:#fff;border-color:#475569}
+.modal-body{padding:22px}
+
+/* ── MINI CARDS ── */
+.mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
+.mini-card{background:#0a0f1a;border-radius:10px;padding:14px;border:1px solid #1e293b;transition:border-color .2s}
+.mini-card:hover{border-color:#334155}
+.mc-label{font-size:10px;color:#475569;text-transform:uppercase;margin-bottom:4px;font-weight:500;letter-spacing:.5px}
+.mc-value{font-size:20px;font-weight:700;letter-spacing:-0.3px}
+
+/* ── DETAIL SECTIONS ── */
+.detail-section{margin-bottom:18px}
+.detail-section h3{font-size:13px;color:#64748b;margin-bottom:12px;text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+
+/* ── MODAL TABS ── */
+.modal-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.modal-tab{padding:6px 14px;font-size:12px;cursor:pointer;color:#64748b;border-radius:8px;transition:all .2s;font-weight:500}
+.modal-tab:hover{background:rgba(56,189,248,.08);color:#cbd5e1}
+.modal-tab.active{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+.modal-tab-content{display:none}.modal-tab-content.active{display:block}
+
+/* ── BUTTONS ── */
+.btn-view{display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#7c3aed,#6d28d9);border:none;border-radius:8px;color:#fff;font-size:12px;cursor:pointer;text-decoration:none;transition:all .2s;font-weight:500;box-shadow:0 2px 8px rgba(124,58,237,.25)}
+.btn-view:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(124,58,237,.35)}
+
+/* ── PAGES ── */
+.page{display:none}.page.active{display:block}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.empty-state{text-align:center;padding:40px;color:#475569;font-size:13px}
+.day-header{padding:12px 16px;background:#0a0f1a;font-size:12px;font-weight:600;color:#64748b;border-bottom:1px solid #1e293b;letter-spacing:.3px}
+
+/* ── REALTIME ── */
+.realtime-banner{background:linear-gradient(135deg,#064e3b,#065f46);border:1px solid #059669;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.realtime-banner .pulse{width:10px;height:10px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.6)}50%{box-shadow:0 0 0 10px rgba(74,222,128,0)}}
+.realtime-banner .rt-users{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+.rt-chip{background:#0a0f1a;border:1px solid #1e293b;border-radius:8px;padding:4px 10px;font-size:12px;display:flex;align-items:center;gap:6px}
+.rt-chip .rt-proj{color:#64748b;font-size:10px}
+.rt-chip.ai{border-color:#831843;background:rgba(131,24,67,.2)}
+.rt-chip.ai::after{content:'🤖';font-size:10px}
+
+/* ── AI BAR ── */
+.ai-bar{display:flex;height:6px;border-radius:4px;overflow:hidden;background:#1e293b;margin-top:4px;min-width:60px}
+.ai-bar .human{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+.ai-bar .ai{background:linear-gradient(90deg,#ec4899,#f472b6)}
+
+/* ── HEATMAP ── */
+.heatmap{display:flex;gap:2px;flex-wrap:wrap}
+.heatmap-cell{width:12px;height:12px;border-radius:3px;background:#111827;border:1px solid #1e293b;transition:transform .1s}
+.heatmap-cell:hover{transform:scale(1.3)}
+.heatmap-cell.l1{background:#166534}.heatmap-cell.l2{background:#16a34a}.heatmap-cell.l3{background:#22c55e}.heatmap-cell.l4{background:#4ade80}
+.heatmap-legend{display:flex;gap:3px;align-items:center;font-size:10px;color:#475569;margin-top:8px}
+
+/* ── ACTIVE USERS ── */
+.active-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;padding:16px}
+.active-card{background:#0a0f1a;border-radius:10px;padding:14px;border:1px solid #1e293b;border-left:4px solid #4ade80;cursor:pointer;transition:all .2s ease}
+.active-card:hover{background:#111827;border-color:#334155;transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.active-card.s-yellow{border-left-color:#fbbf24}
+.active-card.s-orange{border-left-color:#fb923c}
+.active-card .ac-user{font-weight:600;color:#38bdf8;font-size:13px;margin-bottom:5px}
+.active-card .ac-info{font-size:11px;color:#64748b;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.active-card .ac-time{font-size:10px;color:#475569}
+.progress-bar{height:4px;background:#1e293b;border-radius:3px;margin-top:8px;overflow:hidden}
+.progress-bar .fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#0d9488,#2dd4bf);transition:width .4s ease}
+.collapse-btn{background:none;border:1px solid #1e293b;color:#64748b;padding:5px 14px;border-radius:8px;cursor:pointer;font-size:12px;transition:all .2s;font-weight:500}
+.collapse-btn:hover{background:#1e293b;color:#cbd5e1;border-color:#334155}
+
+/* ── TAG CHIPS & BADGES ── */
+.tag-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:600}
+.tag-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid #1e293b;transition:all .2s;background:#0a0f1a;font-weight:500}
+.tag-chip:hover,.tag-chip.active{border-color:#38bdf8;background:rgba(56,189,248,.08)}
+.stacked-bar{display:flex;height:28px;border-radius:8px;overflow:hidden;background:#0a0f1a}
+.stacked-bar div{height:100%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:600;min-width:20px}
+
+/* ── TAG MANAGEMENT ── */
+.tag-group{background:#0a0f1a;border-radius:12px;border:1px solid #1e293b;margin-bottom:14px;overflow:hidden;transition:border-color .2s}
+.tag-group:hover{border-color:#334155}
+.tag-group-header{padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b}
+.tag-group-header h4{font-size:14px;display:flex;align-items:center;gap:8px;font-weight:600}
+.pattern-row{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid rgba(30,41,59,.5);font-size:13px;transition:background .15s}
+.pattern-row:hover{background:rgba(30,41,59,.3)}
+.pattern-row:last-child{border-bottom:none}
+.add-pattern-row{display:flex;gap:8px;padding:12px 18px;background:#0a0f1a}
+.add-pattern-row input{flex:1;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:8px 12px;border-radius:8px;font-size:12px;transition:border-color .2s}
+.add-pattern-row input:focus{outline:none;border-color:#38bdf8}
+.add-pattern-row button{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;transition:all .2s}
+.add-pattern-row button:hover{transform:translateY(-1px)}
+.btn-sm{padding:5px 10px;font-size:11px;border:none;border-radius:6px;cursor:pointer;font-weight:500;transition:all .15s}
+.btn-danger{background:rgba(127,29,29,.5);color:#fca5a5;border:1px solid rgba(220,38,38,.3)}
+.btn-danger:hover{background:rgba(153,27,27,.6)}
+.btn-primary{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff}
+.btn-primary:hover{transform:translateY(-1px)}
+.new-tag-form{background:#0a0f1a;border-radius:14px;border:1px solid #1e293b;padding:20px;margin-bottom:20px;max-width:700px}
+.new-tag-form h4{font-size:14px;margin-bottom:14px;font-weight:600}
+.color-presets{display:flex;gap:8px;margin:10px 0}
+.color-preset{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.color-preset:hover,.color-preset.active{border-color:#fff;transform:scale(1.15);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.icon-presets{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.icon-preset{width:34px;height:34px;border-radius:8px;cursor:pointer;border:1px solid #1e293b;display:flex;align-items:center;justify-content:center;font-size:16px;background:#111827;transition:all .2s}
+.icon-preset:hover,.icon-preset.active{border-color:#38bdf8;background:#1e293b;transform:scale(1.1)}
+.sites-filter{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+
+.url-path{color:#475569;font-size:10px;display:block;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+    .sidebar{display:none}
+    .main{margin-left:0}
+    .stats-grid{grid-template-columns:repeat(2,1fr)}
+    .two-col{grid-template-columns:1fr}
+    .mini-grid{grid-template-columns:repeat(2,1fr)}
+    .active-grid{grid-template-columns:repeat(2,1fr)}
+    .content{padding:16px}
+    .topbar{padding:12px 16px}
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-logo">Wakapi</div>
+    <div class="sidebar-nav">
+        <a class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="icon">📊</span> Dashboard</a>
+        <a class="nav-item" onclick="showPage('projects')" id="nav-projects"><span class="icon">📁</span> Projeler</a>
+        <a class="nav-item" onclick="showPage('languages')" id="nav-languages"><span class="icon">💻</span> Diller</a>
+        <a class="nav-item" onclick="showPage('users')" id="nav-users"><span class="icon">👥</span> Kullanıcılar</a>
+        <a class="nav-item" onclick="showPage('tags')" id="nav-tags"><span class="icon">🏷️</span> Etiketler</a>
+        <a class="nav-item" onclick="showPage('reports')" id="nav-reports"><span class="icon">📋</span> Raporlar</a>
+    </div>
+    <div class="sidebar-footer">Wakapi Admin v3.3<br>Wakapi DevSecOps</div>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <h2 id="pageTitle">📊 Dashboard</h2>
+        <div style="display:flex;align-items:center;gap:12px">
+            <span class="meta" id="lastUpdate"></span>
+            <button class="refresh-btn" onclick="refreshCurrent()">↻ Yenile</button>
+        </div>
+    </div>
+    <div class="content">
+
+        <!-- DASHBOARD PAGE -->
+        <div class="page active" id="page-dashboard">
+            <div class="section" id="activeUsersSection" style="margin-bottom:20px">
+                <div class="section-header">
+                    <h3 style="display:flex;align-items:center;gap:8px"><div class="pulse" style="width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite"></div> Şu An Aktif Kullanıcılar <span id="activeCount" style="color:#64748b;font-weight:400"></span></h3>
+                    <button class="collapse-btn" onclick="toggleActivePanel()" id="activeToggleBtn">Gizle</button>
+                </div>
+                <div id="activeUsersGrid" class="active-grid"></div>
+            </div>
+            <div class="stats-grid" id="dashStats"></div>
+            <div class="section">
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab(this,'today')">📊 Bugün</div>
+                    <div class="tab" onclick="switchTab(this,'week')">📈 Bu Hafta</div>
+                    <div class="tab" onclick="switchTab(this,'daily')">📅 Günlük Detay</div>
+                </div>
+                <div class="tab-content active" id="tab-today">
+                    <table><thead><tr><th>#</th><th>Kullanıcı</th><th>Durum</th><th>HB</th><th>Aktif Saat</th><th>Süre</th><th title="Son 4 haftalık kendi ortalamasına göre">Trend</th><th>Projeler</th><th>Diller</th><th>Editör</th></tr></thead>
+                    <tbody id="todayBody"></tbody></table>
+                </div>
+                <div class="tab-content" id="tab-week">
+                    <table><thead><tr><th>#</th><th>Kullanıcı</th><th>HB</th><th>Aktif Gün</th><th>Süre</th><th title="Son 4 haftalık kendi ortalamasına göre">Trend</th><th>Proje</th><th>Projeler</th><th>Diller</th></tr></thead>
+                    <tbody id="weekBody"></tbody></table>
+                </div>
+                <div class="tab-content" id="tab-daily"><div id="dailyContent"></div></div>
+            </div>
+        </div>
+
+        <!-- PROJECTS PAGE -->
+        <div class="page" id="page-projects">
+            <div class="stats-grid" id="projStats"></div>
+            <div class="section">
+                <div class="section-header"><h3>📁 Tüm Projeler</h3><select id="projDays" onchange="loadProjects()"><option value="7">Son 7 gün</option><option value="14">Son 14 gün</option><option value="30" selected>Son 30 gün</option><option value="90">Son 90 gün</option></select></div>
+                <table><thead><tr><th>Proje</th><th>HB</th><th>🤖 AI %</th><th>Kullanıcı</th><th>Aktif Gün</th><th>Diller</th><th>Çalışanlar</th><th>Son Aktivite</th></tr></thead><tbody id="projBody"></tbody></table>
+            </div>
+        </div>
+
+        <!-- LANGUAGES PAGE -->
+        <div class="page" id="page-languages">
+            <div class="stats-grid" id="langStats"></div>
+            <div class="two-col">
+                <div class="section">
+                    <div class="section-header"><h3>💻 Dil Dağılımı</h3><select id="langDays" onchange="loadLanguages()"><option value="7">Son 7 gün</option><option value="14">Son 14 gün</option><option value="30" selected>Son 30 gün</option><option value="90">Son 90 gün</option></select></div>
+                    <div style="padding:16px" id="langChart"></div>
+                </div>
+                <div class="section">
+                    <div class="section-header"><h3>👤 Kullanıcı Bazlı Diller</h3></div>
+                    <div id="userLangContent"></div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header"><h3>📋 Detaylı Tablo</h3></div>
+                <table><thead><tr><th>Dil</th><th>HB</th><th>Kullanıcı</th><th>Proje</th><th>Çalışanlar</th></tr></thead><tbody id="langBody"></tbody></table>
+            </div>
+        </div>
+
+        <!-- USERS PAGE -->
+        <div class="page" id="page-users">
+            <div class="stats-grid" id="userStats"></div>
+            <div class="section">
+                <div class="section-header"><h3>👥 Tüm Kullanıcılar</h3></div>
+                <table><thead><tr><th>Kullanıcı</th><th>E-posta</th><th>Bugün</th><th>Hafta</th><th>Toplam</th><th>🤖 AI (30g)</th><th>Proje</th><th>Dil</th><th>Aktif Gün</th><th>Son</th><th></th></tr></thead>
+                <tbody id="usersBody"></tbody></table>
+            </div>
+        </div>
+
+        <!-- REPORTS PAGE -->
+        <div class="page" id="page-reports">
+            <div style="display:grid;grid-template-columns:260px 1fr;gap:16px">
+                <!-- Sol Panel -->
+                <div>
+                    <div class="section" style="margin-bottom:14px">
+                        <div style="padding:16px">
+                            <div style="font-size:10px;color:#475569;margin-bottom:5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Rapor Tipi</div>
+                            <select id="reportType" onchange="onReportTypeChange()" style="width:100%;background:#0a0f1a;border:1px solid #1e293b;color:#e2e8f0;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px;cursor:pointer">
+                                <option value="daily">📅 Günlük Rapor</option>
+                                <option value="weekly">📊 Haftalık Rapor</option>
+                                <option value="range">🗓️ Özel Aralık</option>
+                            </select>
+
+                            <div id="singleDateWrap">
+                                <div id="singleDateLabel" style="font-size:10px;color:#475569;margin-bottom:5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Tarih</div>
+                                <input type="date" id="reportDate" value="" style="width:100%;background:#0a0f1a;border:1px solid #1e293b;color:#e2e8f0;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px">
+                            </div>
+
+                            <div id="rangeDateWrap" style="display:none">
+                                <div style="font-size:10px;color:#475569;margin-bottom:5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Başlangıç</div>
+                                <input type="date" id="reportStart" value="" style="width:100%;background:#0a0f1a;border:1px solid #1e293b;color:#e2e8f0;padding:10px;border-radius:8px;font-size:13px;margin-bottom:10px">
+                                <div style="font-size:10px;color:#475569;margin-bottom:5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Bitiş</div>
+                                <input type="date" id="reportEnd" value="" style="width:100%;background:#0a0f1a;border:1px solid #1e293b;color:#e2e8f0;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px">
+                            </div>
+
+                            <button onclick="loadReport()" style="width:100%;padding:11px;background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;box-shadow:0 2px 8px rgba(59,130,246,.25)">Rapor Göster</button>
+                            <button onclick="exportPdf()" style="width:100%;padding:9px;background:rgba(127,29,29,.4);color:#fca5a5;border:1px solid rgba(220,38,38,.3);border-radius:8px;cursor:pointer;font-size:12px;margin-top:8px;font-weight:500;transition:all .2s">PDF İndir</button>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-header"><h3>Geçmiş</h3></div>
+                        <div id="reportHistory" style="max-height:450px;overflow-y:auto"></div>
+                    </div>
+                </div>
+                <!-- Sağ: Rapor -->
+                <div>
+                    <div id="reportSummary"></div>
+                    <div class="section" id="reportSection">
+                        <div class="section-header">
+                            <h3 id="reportTitle">Rapor</h3>
+                        </div>
+                        <div id="reportContent"><div class="empty-state">Tarih seçip "Rapor Göster" tıklayın</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAGS PAGE -->
+        <div class="page" id="page-tags">
+            <div class="new-tag-form">
+                <h4>➕ Yeni Tag Grubu Oluştur</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+                    <div>
+                        <div style="font-size:11px;color:#475569;margin-bottom:4px;font-weight:500;letter-spacing:.3px">Tag Adı</div>
+                        <input type="text" id="newTagName" placeholder="Örn: DevOps" style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:10px 12px;border-radius:8px;font-size:13px;transition:border-color .2s" onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='#1e293b'">
+                    </div>
+                    <div>
+                        <div style="font-size:11px;color:#475569;margin-bottom:4px;font-weight:500;letter-spacing:.3px">İlk Domain Pattern</div>
+                        <input type="text" id="newTagPattern" placeholder="Örn: docker.com" style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:10px 12px;border-radius:8px;font-size:13px;transition:border-color .2s" onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='#1e293b'">
+                    </div>
+                </div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">Renk</div>
+                <div class="color-presets" id="colorPresets">
+                    <div class="color-preset active" style="background:#4ade80" data-color="#4ade80"></div>
+                    <div class="color-preset" style="background:#f87171" data-color="#f87171"></div>
+                    <div class="color-preset" style="background:#a78bfa" data-color="#a78bfa"></div>
+                    <div class="color-preset" style="background:#f472b6" data-color="#f472b6"></div>
+                    <div class="color-preset" style="background:#38bdf8" data-color="#38bdf8"></div>
+                    <div class="color-preset" style="background:#fbbf24" data-color="#fbbf24"></div>
+                    <div class="color-preset" style="background:#2dd4bf" data-color="#2dd4bf"></div>
+                </div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">İkon</div>
+                <div class="icon-presets" id="iconPresets">
+                    <div class="icon-preset active" data-icon="🏷️">🏷️</div>
+                    <div class="icon-preset" data-icon="💼">💼</div>
+                    <div class="icon-preset" data-icon="🎮">🎮</div>
+                    <div class="icon-preset" data-icon="📱">📱</div>
+                    <div class="icon-preset" data-icon="🤖">🤖</div>
+                    <div class="icon-preset" data-icon="📚">📚</div>
+                    <div class="icon-preset" data-icon="🔧">🔧</div>
+                    <div class="icon-preset" data-icon="🎨">🎨</div>
+                    <div class="icon-preset" data-icon="🛒">🛒</div>
+                    <div class="icon-preset" data-icon="📧">📧</div>
+                </div>
+                <button class="btn-primary" style="margin-top:10px;padding:8px 20px;font-size:13px" onclick="createTag()">Oluştur</button>
+            </div>
+            <div id="tagGroups"></div>
+            <div class="section" style="margin-top:20px">
+                <div class="section-header"><h3>❓ Etiketlenmemiş Domain'ler</h3></div>
+                <div id="untaggedDomains" style="padding:14px"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- USER DETAIL MODAL -->
+<div class="modal-overlay" id="userModal" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+<div class="modal-header">
+    <div style="display:flex;align-items:center;gap:16px;flex:1">
+        <h2 id="modalTitle">Kullanıcı</h2>
+        <div class="modal-tabs">
+            <span class="modal-tab active" onclick="switchModalTab(this,'overview')">📊 Genel</span>
+            <span class="modal-tab" onclick="switchModalTab(this,'files')">📄 Dosyalar</span>
+            <span class="modal-tab" onclick="switchModalTab(this,'domains')">🌐 Siteler</span>
+            <span class="modal-tab" onclick="switchModalTab(this,'machines')">🖥️ Makineler</span>
+            <span class="modal-tab" onclick="switchModalTab(this,'adjust')">⏱️ Zaman Ayarı</span>
+            <span class="modal-tab" onclick="switchModalTab(this,'leaves')">🏝️ İzinler</span>
+        </div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+        <a id="wakapiLink" href="https://wakapi.aysbulut.com" target="_blank" class="btn-view">🔗 Wakapi</a>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+</div>
+<div class="modal-body" id="modalBody"><div class="empty-state">Yükleniyor...</div></div>
+</div></div>
+
+<script>
+const WAKAPI = 'https://wakapi.aysbulut.com';
+let currentPage = 'dashboard';
+
+function formatTime(s) {
+    if (!s || s === 0) return '-';
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    return h > 0 ? h + ' sa ' + m + ' dk' : m + ' dk';
+}
+
+function aiPctBadge(pct) {
+    if (!pct || pct === 0) return '<span style="color:#475569;font-size:11px">-</span>';
+    const color = pct > 70 ? '#f472b6' : pct > 30 ? '#fbbf24' : '#4ade80';
+    return `<span style="color:${color};font-weight:600;font-size:12px">🤖 ${pct}%</span>`;
+}
+
+function trendBadge(pct, avgSec) {
+    if (pct === null || pct === undefined) {
+        return '<span style="color:#475569;font-size:10px" title="Yeterli geçmiş yok">—</span>';
+    }
+    const abs = Math.abs(pct);
+    const color = pct >= 15 ? '#4ade80' : pct <= -15 ? '#f87171' : '#94a3b8';
+    const arrow = pct >= 5 ? '▲' : pct <= -5 ? '▼' : '▬';
+    const sign = pct > 0 ? '+' : '';
+    const tip = avgSec ? `Son 4 hafta ortalama: ${formatTime(avgSec)}` : '';
+    return `<span style="color:${color};font-size:11px;font-weight:600" title="${tip}">${arrow} ${sign}${pct}%</span>`;
+}
+
+function aiBar(total, aiSec) {
+    if (!total || total === 0) return '';
+    const pct = Math.round((aiSec || 0) / total * 100);
+    const humanPct = 100 - pct;
+    return `<div class="ai-bar" title="İnsan: ${humanPct}% | AI: ${pct}%"><div class="human" style="width:${humanPct}%"></div><div class="ai" style="width:${pct}%"></div></div>`;
+}
+
+function showPage(page) {
+    currentPage = page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.getElementById('nav-' + page).classList.add('active');
+    const titles = {dashboard:'📊 Dashboard', projects:'📁 Projeler', languages:'💻 Diller', users:'👥 Kullanıcılar', tags:'🏷️ Etiketler', reports:'📋 Raporlar'};
+    document.getElementById('pageTitle').textContent = titles[page] || page;
+    if (page === 'projects') loadProjects();
+    else if (page === 'languages') loadLanguages();
+    else if (page === 'users') loadUsers();
+    else if (page === 'tags') loadTags();
+    else if (page === 'reports') initReports();
+}
+
+function refreshCurrent() {
+    if (currentPage === 'dashboard') loadDashboard();
+    else if (currentPage === 'projects') loadProjects();
+    else if (currentPage === 'languages') loadLanguages();
+    else if (currentPage === 'users') loadUsers();
+    else if (currentPage === 'tags') loadTags();
+    else if (currentPage === 'reports') loadReport();
+}
+
+function switchTab(el, tab) {
+    el.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.closest('.section').querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+}
+
+function tags(str, cls) {
+    if (!str || str === '-' || str === 'None') return '<span style="color:#475569">-</span>';
+    return str.split(', ').filter(s => s.trim()).map(s => '<span class="tag ' + cls + '">' + s.trim() + '</span>').join('');
+}
+
+function ulink(name) {
+    return '<a class="user-link" onclick="openUser(\'' + name.replace(/'/g, "\\'") + '\')">' + (name || '-') + '</a>';
+}
+
+// ===== REALTIME =====
+let activePanelVisible = true;
+function toggleActivePanel() {
+    activePanelVisible = !activePanelVisible;
+    document.getElementById('activeUsersGrid').style.display = activePanelVisible ? 'grid' : 'none';
+    document.getElementById('activeToggleBtn').textContent = activePanelVisible ? 'Gizle' : 'Göster';
+}
+async function loadRealtime() {
+    try {
+        const r = await fetch('/api/realtime');
+        const d = await r.json();
+        document.getElementById('activeCount').textContent = d.count > 0 ? `(${d.count})` : '(0)';
+        const grid = document.getElementById('activeUsersGrid');
+        if (d.count === 0) {
+            grid.innerHTML = '<div class="empty-state">Şu an aktif kullanıcı yok</div>';
+            return;
+        }
+        grid.innerHTML = d.active.map(u => {
+            const sa = u.seconds_ago || 0;
+            const statusCls = sa < 120 ? '' : sa < 300 ? 's-yellow' : 's-orange';
+            const agoText = sa < 60 ? 'şimdi' : Math.floor(sa/60) + ' dk önce';
+            const todaySec = u.today_coding_seconds || 0;
+            const pct = Math.min(Math.round(todaySec / (8*3600) * 100), 100);
+            const isBrowsing = u.last_type === 'domain' || u.last_type === 'url';
+            const display = isBrowsing ? (u.last_entity || '').replace(/https?:\/\//,'') : (u.project || '-');
+            return `<div class="active-card ${statusCls}" onclick="openUser('${(u.user_id||'').replace(/'/g,"\\'")}')">
+                <div class="ac-user">${u.user_id}${u.is_ai ? ' <span style="font-size:10px">🤖</span>' : ''}</div>
+                <div class="ac-info" title="${display}">${isBrowsing ? '🌐' : '📁'} ${display}</div>
+                <div class="ac-info">${u.language || ''} · ${u.editor || ''}</div>
+                <div class="ac-time">${agoText} · Bugün: ${formatTime(todaySec)}</div>
+                <div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>
+            </div>`;
+        }).join('');
+    } catch(e) {}
+}
+
+// ===== DASHBOARD =====
+async function loadDashboard() {
+    loadRealtime();
+    const r = await fetch('/api/summary');
+    if (!r.ok) return;
+    const d = await r.json();
+    document.getElementById('lastUpdate').textContent = 'Son: ' + d.generated_at;
+
+    const deltaHtml = d.week_delta_pct !== 0
+        ? `<span class="delta ${d.week_delta_pct > 0 ? 'up' : 'down'}">${d.week_delta_pct > 0 ? '▲' : '▼'} ${Math.abs(d.week_delta_pct)}%</span>`
+        : '';
+
+    document.getElementById('dashStats').innerHTML = `
+        <div class="stat-card blue"><div class="label">Toplam Kullanıcı</div><div class="value">${d.total_users}</div></div>
+        <div class="stat-card green"><div class="label">Bugün Aktif</div><div class="value">${d.active_today}</div></div>
+        <div class="stat-card red"><div class="label">Bugün İnaktif</div><div class="value">${d.inactive_today}</div></div>
+        <div class="stat-card orange"><div class="label">Bugünkü HB</div><div class="value">${d.heartbeats_today}</div></div>
+        <div class="stat-card teal"><div class="label">Bugünkü Süre</div><div class="value" style="font-size:22px">${formatTime(d.total_coding_today)}</div></div>
+        <div class="stat-card purple"><div class="label">Haftalık Süre</div><div class="value" style="font-size:20px">${formatTime(d.total_coding_week)}${deltaHtml}</div></div>`;
+
+    // Today tab
+    const maxHb = Math.max(...d.users.map(u => u.today.heartbeats), 1);
+    document.getElementById('todayBody').innerHTML = d.users.map((u, i) => {
+        const a = u.today.heartbeats > 0 || (u.today.adjustment_seconds||0) !== 0;
+        const adjBadge = (u.today.adjustment_seconds||0) !== 0
+            ? `<span style="font-size:10px;color:${u.today.adjustment_seconds>0?'#2dd4bf':'#f87171'};margin-left:4px">(${u.today.adjustment_seconds>0?'+':'-'}${formatTime(Math.abs(u.today.adjustment_seconds))})</span>`
+            : '';
+        return `<tr>
+            <td style="color:#64748b">${i+1}</td>
+            <td>${ulink(u.id)}</td>
+            <td><span class="status-dot ${a?'active':'inactive'}"></span>${a?'<span style="color:#4ade80">Aktif</span>':'<span style="color:#64748b">İnaktif</span>'}</td>
+            <td>${u.today.heartbeats}<div class="hb-bar" style="width:${(u.today.heartbeats/maxHb)*100}px"></div></td>
+            <td class="time-range">${a ? u.today.first_active+' - '+u.today.last_active : '-'}</td>
+            <td><span style="color:#2dd4bf;font-weight:600">${formatTime(u.today.coding_seconds)}</span>${adjBadge}</td>
+            <td>${trendBadge(u.today.trend_pct, u.today.avg_daily_4w)}</td>
+            <td>${tags(u.today.projects,'tag-project')}</td>
+            <td>${tags(u.today.languages,'tag-lang')}</td>
+            <td>${tags(u.today.editors,'tag-editor')}</td>
+        </tr>`;
+    }).join('');
+
+    // Week tab
+    const wu = [...d.users].sort((a,b) => b.week.coding_seconds - a.week.coding_seconds);
+    const maxW = Math.max(...wu.map(u => u.week.heartbeats), 1);
+    document.getElementById('weekBody').innerHTML = wu.map((u, i) => {
+        const wAdj = u.week.adjustment_seconds || 0;
+        const wAdjBadge = wAdj !== 0
+            ? `<span style="font-size:10px;color:${wAdj>0?'#2dd4bf':'#f87171'};margin-left:4px">(${wAdj>0?'+':'-'}${formatTime(Math.abs(wAdj))})</span>`
+            : '';
+        return `<tr>
+        <td style="color:#64748b">${i+1}</td>
+        <td>${ulink(u.id)}</td>
+        <td>${u.week.heartbeats}<div class="hb-bar" style="width:${(u.week.heartbeats/maxW)*100}px"></div></td>
+        <td>${u.week.active_days}/7</td>
+        <td><span style="color:#2dd4bf;font-weight:600">${formatTime(u.week.coding_seconds)}</span>${wAdjBadge}</td>
+        <td>${trendBadge(u.week.trend_pct, u.week.avg_weekly_4w)}</td>
+        <td>${u.week.project_count}</td>
+        <td>${tags(u.week.projects,'tag-project')}</td>
+        <td>${tags(u.week.languages,'tag-lang')}</td>
+    </tr>`;
+    }).join('');
+
+    // Daily tab
+    const days = Object.keys(d.daily_breakdown).sort().reverse();
+    const dn = {0:'Pazar',1:'Pazartesi',2:'Salı',3:'Çarşamba',4:'Perşembe',5:'Cuma',6:'Cumartesi'};
+    document.getElementById('dailyContent').innerHTML = days.map(day => {
+        const dt = new Date(day);
+        const e = d.daily_breakdown[day];
+        return `<div class="day-header">📅 ${dn[dt.getDay()]}, ${dt.getDate().toString().padStart(2,'0')}/${(dt.getMonth()+1).toString().padStart(2,'0')} — ${e.length} aktif</div>
+        <table><thead><tr><th>Kullanıcı</th><th>HB</th><th>Süre</th><th>Saat</th><th>Projeler</th><th>Diller</th></tr></thead>
+        <tbody>${e.map(x => {
+            const xAdj = x.adjustment_seconds || 0;
+            const xAdjBadge = xAdj !== 0
+                ? `<span style="font-size:10px;color:${xAdj>0?'#2dd4bf':'#f87171'};margin-left:4px">(${xAdj>0?'+':'-'}${formatTime(Math.abs(xAdj))})</span>`
+                : '';
+            return `<tr>
+            <td>${ulink(x.user_id)}</td>
+            <td>${x.heartbeats}</td>
+            <td><span style="color:#2dd4bf">${formatTime(x.coding_seconds)}</span>${xAdjBadge}</td>
+            <td class="time-range">${x.first_active} - ${x.last_active}</td>
+            <td>${tags(x.projects,'tag-project')}</td>
+            <td>${tags(x.languages,'tag-lang')}</td>
+        </tr>`;
+        }).join('')}</tbody></table>`;
+    }).join('') || '<div class="empty-state">Veri yok</div>';
+}
+
+// ===== PROJECTS =====
+async function loadProjects() {
+    const days = document.getElementById('projDays').value;
+    const r = await fetch('/api/projects?days=' + days);
+    const d = await r.json();
+    document.getElementById('lastUpdate').textContent = 'Son: ' + d.generated_at;
+    const totalP = d.projects.length;
+    const totalHb = d.projects.reduce((s,p) => s+p.heartbeats, 0);
+    const totalAi = d.projects.reduce((s,p) => s+(p.ai_heartbeats||0), 0);
+    const totalU = new Set(d.projects.flatMap(p => (p.users||'').split(', ').filter(Boolean))).size;
+    document.getElementById('projStats').innerHTML = `
+        <div class="stat-card blue"><div class="label">Toplam Proje</div><div class="value">${totalP}</div></div>
+        <div class="stat-card green"><div class="label">Toplam HB</div><div class="value">${totalHb}</div></div>
+        <div class="stat-card orange"><div class="label">Aktif Geliştirici</div><div class="value">${totalU}</div></div>
+        <div class="stat-card pink"><div class="label">🤖 AI HB</div><div class="value">${totalAi}</div><div class="sub">${totalHb>0?Math.round(totalAi/totalHb*100):0}%</div></div>`;
+    const maxHb = Math.max(...d.projects.map(p => p.heartbeats), 1);
+    document.getElementById('projBody').innerHTML = d.projects.map(p => {
+        const aiPct = p.heartbeats > 0 ? Math.round((p.ai_heartbeats||0)/p.heartbeats*100) : 0;
+        return `<tr><td><strong>${p.name}</strong></td><td>${p.heartbeats}<div class="hb-bar" style="width:${(p.heartbeats/maxHb)*80}px"></div></td><td>${aiPctBadge(aiPct)}</td><td>${p.user_count}</td><td>${p.active_days}</td><td>${tags(p.languages,'tag-lang')}</td><td>${tags(p.users,'tag-user')}</td><td class="time-range">${p.last_activity||'-'}</td></tr>`;
+    }).join('') || '<tr><td colspan="8" class="empty-state">Veri yok</td></tr>';
+}
+
+// ===== LANGUAGES =====
+async function loadLanguages() {
+    const days = document.getElementById('langDays').value;
+    const r = await fetch('/api/languages?days=' + days);
+    const d = await r.json();
+    document.getElementById('lastUpdate').textContent = 'Son: ' + d.generated_at;
+    const totalL = d.languages.length;
+    const totalHb = d.languages.reduce((s,l) => s+l.heartbeats, 0);
+    document.getElementById('langStats').innerHTML = `
+        <div class="stat-card blue"><div class="label">Toplam Dil</div><div class="value">${totalL}</div></div>
+        <div class="stat-card green"><div class="label">Toplam HB</div><div class="value">${totalHb}</div></div>
+        <div class="stat-card purple"><div class="label">Dönem</div><div class="value" style="font-size:18px">Son ${days} gün</div></div>`;
+    const maxL = Math.max(...d.languages.map(l => l.heartbeats), 1);
+    document.getElementById('langChart').innerHTML = '<div class="bar-chart">' +
+        d.languages.slice(0,15).map(l =>
+            `<div class="bar-row"><div class="bar-label">${l.name}</div><div class="bar-fill lang" style="width:${Math.max((l.heartbeats/maxL)*100,5)}%">${l.heartbeats}</div></div>`
+        ).join('') + '</div>';
+    const ul = d.user_languages;
+    const usrs = Object.keys(ul).sort();
+    document.getElementById('userLangContent').innerHTML = usrs.map(u =>
+        `<div class="day-header">👤 ${u}</div><div style="padding:8px 14px">${ul[u].slice(0,8).map(l =>
+            `<span class="tag tag-lang" style="font-size:12px;padding:4px 10px;margin:2px">${l.name}: ${l.heartbeats}</span>`
+        ).join('')}</div>`
+    ).join('') || '<div class="empty-state">Veri yok</div>';
+    document.getElementById('langBody').innerHTML = d.languages.map(l =>
+        `<tr><td><strong>${l.name}</strong></td><td>${l.heartbeats}</td><td>${l.user_count}</td><td>${(l.projects||'').split(', ').filter(Boolean).length}</td><td>${tags(l.users,'tag-user')}</td></tr>`
+    ).join('');
+}
+
+// ===== USERS =====
+async function loadUsers() {
+    const r = await fetch('/api/users');
+    const d = await r.json();
+    document.getElementById('lastUpdate').textContent = 'Son: ' + d.generated_at;
+    const total = d.users.length;
+    const activeToday = d.users.filter(u => u.today_heartbeats > 0).length;
+    const totalHb = d.users.reduce((s,u) => s+(u.total_heartbeats||0), 0);
+    document.getElementById('userStats').innerHTML = `
+        <div class="stat-card blue"><div class="label">Toplam Kullanıcı</div><div class="value">${total}</div></div>
+        <div class="stat-card green"><div class="label">Bugün Aktif</div><div class="value">${activeToday}</div></div>
+        <div class="stat-card red"><div class="label">Bugün İnaktif</div><div class="value">${total-activeToday}</div></div>
+        <div class="stat-card orange"><div class="label">Toplam HB</div><div class="value">${totalHb}</div></div>`;
+    document.getElementById('usersBody').innerHTML = d.users.map(u => {
+        const a = u.today_heartbeats > 0;
+        const aiPct = u.total_heartbeats > 0 ? Math.round((u.ai_heartbeats_30d||0)/u.total_heartbeats*100) : 0;
+        return `<tr>
+            <td>${ulink(u.id)}</td>
+            <td class="time-range">${u.email||'-'}</td>
+            <td>${a?'<span style="color:#4ade80;font-weight:600">'+u.today_heartbeats+'</span>':'<span style="color:#64748b">0</span>'}</td>
+            <td>${u.week_heartbeats||0}</td>
+            <td>${u.total_heartbeats||0}</td>
+            <td>${aiPctBadge(aiPct)}</td>
+            <td>${u.total_projects||0}</td>
+            <td>${u.total_languages||0}</td>
+            <td>${u.active_days||0}</td>
+            <td class="time-range">${u.last_seen||'-'}</td>
+            <td><button class="btn-view" onclick="openUser('${u.id.replace(/'/g,"\\'")}')" style="font-size:10px;padding:4px 8px">🔍</button></td>
+        </tr>`;
+    }).join('');
+}
+
+// ===== HEATMAP =====
+function renderHeatmap(data) {
+    if (!data || data.length === 0) return '<div class="empty-state">Veri yok</div>';
+    const map = {};
+    let maxCount = 1;
+    data.forEach(h => { map[h.day] = h.count; if (h.count > maxCount) maxCount = h.count; });
+    const today = new Date();
+    let cells = '';
+    for (let i = 89; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        const count = map[key] || 0;
+        let lvl = '';
+        if (count > 0) {
+            const pct = count / maxCount;
+            lvl = pct > 0.75 ? 'l4' : pct > 0.5 ? 'l3' : pct > 0.25 ? 'l2' : 'l1';
+        }
+        cells += `<div class="heatmap-cell ${lvl}" title="${key}: ${count} HB"></div>`;
+    }
+    return `<div class="heatmap">${cells}</div>
+    <div class="heatmap-legend"><span>Az</span><div class="heatmap-cell l1"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><span>Çok</span></div>`;
+}
+
+// ===== USER MODAL =====
+async function openUser(userId) {
+    const modal = document.getElementById('userModal');
+    const body = document.getElementById('modalBody');
+    document.getElementById('modalTitle').textContent = '👤 ' + userId;
+    document.getElementById('wakapiLink').href = '/set-view-user?user=' + encodeURIComponent(userId);
+    modal.classList.add('active');
+    document.querySelectorAll('.modal-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+    body.innerHTML = '<div class="empty-state">Yükleniyor...</div>';
+    document.body.style.overflow = 'hidden';
+    currentSitesUser = userId;
+    try {
+        const r = await fetch('/api/user/' + encodeURIComponent(userId));
+        const d = await r.json();
+        const t = d.totals || {};
+        const ai = d.ai_totals || {};
+        const maxP = Math.max(...(d.projects||[]).map(p => p.coding_seconds||p.heartbeats), 1);
+        const maxL = Math.max(...(d.languages||[]).map(l => l.coding_seconds||l.heartbeats), 1);
+        const maxE = Math.max(...(d.editors||[]).map(e => e.heartbeats), 1);
+        const maxH = Math.max(...d.hourly, 1);
+        const maxW = Math.max(...(d.weekly_trend||[]).map(w => w.coding_seconds), 1);
+        const maxM = Math.max(...(d.machines||[]).map(m => m.heartbeats), 1);
+        const dn = {0:'Paz',1:'Pzt',2:'Sal',3:'Çar',4:'Per',5:'Cum',6:'Cmt'};
+        const dnFull = {0:'Pazar',1:'Pazartesi',2:'Salı',3:'Çarşamba',4:'Perşembe',5:'Cuma',6:'Cumartesi'};
+
+        const weeklyBars = (d.weekly_trend||[]).map(w => {
+            const dt = new Date(w.day);
+            const pct = Math.max((w.coding_seconds / maxW) * 100, 3);
+            const aiPct = w.coding_seconds > 0 ? Math.round((w.ai_heartbeats||0)/ Math.max(w.heartbeats,1)*100) : 0;
+            return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px">
+                <div style="width:100%;display:flex;align-items:flex-end;justify-content:center;height:60px">
+                    <div style="width:80%;background:linear-gradient(180deg,#2dd4bf,#0d9488);border-radius:4px 4px 0 0;height:${pct}%;min-height:3px" title="${formatTime(w.coding_seconds)}"></div>
+                </div>
+                <div style="font-size:10px;color:#64748b">${dn[dt.getDay()]}</div>
+                <div style="font-size:9px;color:#2dd4bf">${formatTime(w.coding_seconds)}</div>
+                ${aiPct > 0 ? `<div style="font-size:8px;color:#f472b6">🤖${aiPct}%</div>` : ''}
+            </div>`;
+        }).join('');
+
+        body.innerHTML = `
+<div class="modal-tab-content active" id="modal-tab-overview">
+<div class="mini-grid">
+    <div class="mini-card"><div class="mc-label">Toplam HB</div><div class="mc-value">${t.total_heartbeats||0}</div></div>
+    <div class="mini-card"><div class="mc-label">Proje</div><div class="mc-value">${t.total_projects||0}</div></div>
+    <div class="mini-card"><div class="mc-label">Aktif Gün</div><div class="mc-value">${t.total_active_days||0}</div></div>
+    <div class="mini-card"><div class="mc-label">Son Görülme</div><div class="mc-value" style="font-size:13px">${t.last_seen||'-'}</div></div>
+    <div class="mini-card" style="border-color:#831843"><div class="mc-label">🤖 AI Süre (30g)</div><div class="mc-value" style="font-size:16px;color:#f472b6">${formatTime(ai.ai_coding_seconds||0)}</div></div>
+    <div class="mini-card" style="border-color:#831843"><div class="mc-label">🤖 AI HB (30g)</div><div class="mc-value" style="color:#f472b6">${ai.ai_heartbeats||0}</div></div>
+    <div class="mini-card" style="border-color:${(d.adjustment_seconds||0)===0?'#1e293b':((d.adjustment_seconds||0)>0?'#0d9488':'#7f1d1d')}"><div class="mc-label">⏱️ Manuel Ayar</div><div class="mc-value" style="font-size:16px;color:${(d.adjustment_seconds||0)===0?'#64748b':((d.adjustment_seconds||0)>0?'#2dd4bf':'#f87171')}">${(d.adjustment_seconds||0)===0?'Yok':((d.adjustment_seconds||0)>0?'+':'-')+formatTime(Math.abs(d.adjustment_seconds))}</div></div>
+</div>
+
+<div class="detail-section"><h3>📅 90 Günlük Aktivite Haritası</h3>${renderHeatmap(d.heatmap)}</div>
+
+<div class="detail-section"><h3>📈 Son 7 Gün Trend</h3>
+    <div style="display:flex;gap:6px;align-items:flex-end;padding:4px 0">${weeklyBars || '<div class="empty-state">Veri yok</div>'}</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+    <div class="detail-section"><h3>📁 Projeler (30g)</h3>
+        <div class="bar-chart">${(d.projects||[]).map(p =>
+            '<div class="bar-row"><div class="bar-label">'+p.name+'</div><div class="bar-fill project" style="width:'+Math.max(((p.coding_seconds||p.heartbeats)/maxP)*100,5)+'%">'+formatTime(p.coding_seconds||0)+'</div></div>'
+        ).join('')||'<div class="empty-state">-</div>'}</div>
+    </div>
+    <div class="detail-section"><h3>💻 Diller (30g)</h3>
+        <div class="bar-chart">${(d.languages||[]).map(l =>
+            '<div class="bar-row"><div class="bar-label">'+l.name+'</div><div class="bar-fill lang" style="width:'+Math.max(((l.coding_seconds||l.heartbeats)/maxL)*100,5)+'%">'+formatTime(l.coding_seconds||0)+'</div></div>'
+        ).join('')||'<div class="empty-state">-</div>'}</div>
+    </div>
+    <div class="detail-section"><h3>🖥️ Editörler (30g)</h3>
+        <div class="bar-chart">${(d.editors||[]).map(e =>
+            '<div class="bar-row"><div class="bar-label">'+e.name+(e.ai_coding_seconds > 0 ? ' <span style="color:#f472b6;font-size:9px">🤖'+Math.round(e.ai_coding_seconds/Math.max(e.coding_seconds,1)*100)+'%</span>' : '')+'</div><div class="bar-fill" style="background:linear-gradient(90deg,'+(e.ai_coding_seconds > 0 ? '#831843,#be185d':'#4a1d96,#7c3aed')+');width:'+Math.max((e.heartbeats/maxE)*100,5)+'%">'+formatTime(e.coding_seconds)+'</div></div>'
+        ).join('')||'<div class="empty-state">-</div>'}</div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div class="detail-section"><h3>⏰ Bugünkü Saatlik Aktivite</h3>
+    <div class="hourly-chart">${d.hourly.map((h,i) =>
+        '<div class="hourly-bar" style="height:'+Math.max((h/maxH)*100,3)+'%" title="'+String(i).padStart(2,'0')+':00 → '+h+' HB"></div>'
+    ).join('')}</div>
+    <div class="hourly-labels">${Array.from({length:24},(_,i) =>
+        '<span>'+(i%3===0?String(i).padStart(2,'0'):'')+'</span>'
+    ).join('')}</div>
+</div>
+<div class="detail-section" style="display:flex;flex-direction:column;justify-content:center">
+    <h3>🔑 Bilgi</h3>
+    <div style="margin-top:8px;font-size:11px;color:#64748b">E-posta</div>
+    <div style="font-size:13px;color:#e2e8f0;margin-bottom:8px">${d.email||'-'}</div>
+    <div style="font-size:11px;color:#64748b">İlk Görülme</div>
+    <div style="font-size:13px;color:#e2e8f0">${t.first_seen||'-'}</div>
+</div>
+</div>
+
+<div class="detail-section"><h3>📅 Son 14 Gün</h3>
+    <table><thead><tr><th>Tarih</th><th>HB</th><th>Süre</th><th>🤖 AI</th><th>Saat</th><th>Projeler</th><th>Diller</th><th>Editör</th></tr></thead>
+    <tbody>${(d.daily||[]).map(day => {
+        const dt = new Date(day.day);
+        const aiPct = day.coding_seconds > 0 ? Math.round((day.ai_coding_seconds||0)/day.coding_seconds*100) : 0;
+        return '<tr><td>'+dnFull[dt.getDay()]+', '+dt.getDate().toString().padStart(2,'0')+'/'+(dt.getMonth()+1).toString().padStart(2,'0')+'</td>' +
+            '<td>'+day.heartbeats+'</td>' +
+            '<td><span style="color:#2dd4bf">'+formatTime(day.coding_seconds)+'</span></td>' +
+            '<td>'+aiPctBadge(aiPct)+'</td>' +
+            '<td class="time-range">'+day.first_active+' - '+day.last_active+'</td>' +
+            '<td>'+tags(day.projects,'tag-project')+'</td>' +
+            '<td>'+tags(day.languages,'tag-lang')+'</td>' +
+            '<td>'+tags(day.editors,'tag-editor')+'</td></tr>';
+    }).join('')||'<tr><td colspan="8" class="empty-state">-</td></tr>'}</tbody></table>
+</div>
+</div>
+
+<div class="modal-tab-content" id="modal-tab-files">
+<div class="detail-section"><h3>📄 Son 7 Günde Çalışılan Dosyalar</h3>
+<table><thead><tr><th>Dosya</th><th>Proje</th><th>Dil</th><th>HB</th><th>Süre</th></tr></thead>
+<tbody>${(d.file_activity||[]).map(f => {
+    const fname = f.entity.replace(/\\/g,'/').split('/').pop();
+    const fpath = f.entity.replace(/\\/g,'/').replace(/\/[^/]+$/,'');
+    return '<tr>' +
+        '<td><span style="color:#e2e8f0;font-weight:500">'+fname+'</span><br><span style="font-size:10px;color:#475569">'+fpath+'</span></td>' +
+        '<td><span class="tag tag-project">'+(f.project||'-')+'</span></td>' +
+        '<td><span class="tag tag-lang">'+(f.language||'-')+'</span></td>' +
+        '<td>'+f.heartbeats+'</td>' +
+        '<td><span style="color:#2dd4bf">'+formatTime(f.coding_seconds)+'</span></td></tr>';
+}).join('')||'<tr><td colspan="5" class="empty-state">Dosya verisi yok</td></tr>'}</tbody></table>
+</div>
+</div>
+
+<div class="modal-tab-content" id="modal-tab-domains">
+<div id="sitesTabContent"><div class="empty-state">Yükleniyor...</div></div>
+</div>
+
+<div class="modal-tab-content" id="modal-tab-machines">
+<div class="detail-section"><h3>🖥️ Son 30 Günde Kullanılan Makineler</h3>
+<table><thead><tr><th>Makine</th><th>İşletim Sistemi</th><th>HB</th><th>Süre</th><th>Oran</th></tr></thead>
+<tbody>${(d.machines||[]).map(m => {
+    const pct = Math.round(m.heartbeats / Math.max(...(d.machines||[]).map(x=>x.heartbeats),1) * 100);
+    return '<tr><td><strong>'+m.name+'</strong></td><td class="time-range">'+(m.os||'-')+'</td><td>'+m.heartbeats+'</td><td><span style="color:#2dd4bf">'+formatTime(m.coding_seconds)+'</span></td><td><div class="hb-bar" style="width:'+pct+'px;background:#a78bfa"></div> '+pct+'%</td></tr>';
+}).join('')||'<tr><td colspan="5" class="empty-state">Makine verisi yok</td></tr>'}</tbody></table>
+</div>
+</div>
+
+<div class="modal-tab-content" id="modal-tab-adjust">
+<div id="adjustTabContent"><div class="empty-state">Yükleniyor...</div></div>
+</div>
+
+<div class="modal-tab-content" id="modal-tab-leaves">
+<div id="leavesTabContent"><div class="empty-state">Yükleniyor...</div></div>
+</div>`;
+
+        // Ensure first tab is shown
+        setTimeout(() => {
+            document.querySelectorAll('.modal-tab-content').forEach((t,i) => t.classList.toggle('active', i===0));
+        }, 0);
+    } catch(e) {
+        body.innerHTML = '<div class="empty-state">Hata: ' + e.message + '</div>';
+    }
+}
+
+function switchModalTab(el, tab) {
+    document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.modal-tab-content').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    const el2 = document.getElementById('modal-tab-' + tab);
+    if (el2) el2.classList.add('active');
+    if (tab === 'domains' && currentSitesUser) loadSites(currentSitesUser, 7);
+    if (tab === 'adjust' && currentSitesUser) loadAdjustments(currentSitesUser);
+    if (tab === 'leaves' && currentSitesUser) loadLeaves(currentSitesUser);
+}
+
+// ===== TIME ADJUSTMENTS =====
+async function loadAdjustments(userId) {
+    const el = document.getElementById('adjustTabContent');
+    if (!el) return;
+    el.innerHTML = '<div class="empty-state">Yükleniyor...</div>';
+    try {
+        const r = await fetch('/api/user/' + encodeURIComponent(userId) + '/adjustments');
+        const d = await r.json();
+        const rows = d.adjustments || [];
+        const total = d.total_seconds || 0;
+        const totalColor = total === 0 ? '#64748b' : (total > 0 ? '#2dd4bf' : '#f87171');
+        const totalSign = total > 0 ? '+' : (total < 0 ? '-' : '');
+        const totalDisplay = total === 0 ? 'Yok' : (totalSign + formatTime(Math.abs(total)));
+
+        const safeUser = userId.replace(/'/g, "\\'");
+        const today = todayStr();
+        const form = `
+<div class="detail-section">
+    <h3>➕ Manuel Zaman Ekle / Çıkar</h3>
+    <div style="background:#0a0f1a;border:1px solid #1e293b;border-radius:10px;padding:16px">
+        <div style="display:grid;grid-template-columns:130px 150px 90px 90px 1fr auto;gap:10px;align-items:end">
+            <div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">İşlem</div>
+                <select id="adjOp" style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:9px 10px;border-radius:8px;font-size:13px">
+                    <option value="add">➕ Ekle</option>
+                    <option value="sub">➖ Çıkar</option>
+                </select>
+            </div>
+            <div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">Tarih</div>
+                <input type="date" id="adjDate" value="${today}" style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:9px 10px;border-radius:8px;font-size:13px">
+            </div>
+            <div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">Saat</div>
+                <input type="number" id="adjHours" min="0" step="1" value="0" style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:9px 10px;border-radius:8px;font-size:13px">
+            </div>
+            <div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">Dakika</div>
+                <input type="number" id="adjMinutes" min="0" max="59" step="1" value="0" style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:9px 10px;border-radius:8px;font-size:13px">
+            </div>
+            <div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">Not (opsiyonel)</div>
+                <input type="text" id="adjReason" placeholder="Örn: toplantı, eğitim, manuel düzeltme..." style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:9px 10px;border-radius:8px;font-size:13px">
+            </div>
+            <button class="btn-primary" style="padding:10px 20px;font-size:13px;border:none;border-radius:8px;cursor:pointer;font-weight:600" onclick="submitAdjustment('${safeUser}')">Uygula</button>
+        </div>
+        <div style="font-size:11px;color:#475569;margin-top:10px">💡 Ayar seçilen tarihe yazılır; o günün toplam süresine uygulanır (Bugün, Hafta, Günlük Detay, Raporlar, Kullanıcı modal dahil). Wakapi leaderboard'ı ayrı servis olduğu için etkilenmez.</div>
+    </div>
+</div>
+
+<div class="detail-section">
+    <h3>📊 Toplam Ayar</h3>
+    <div class="mini-grid">
+        <div class="mini-card" style="border-color:${total===0?'#1e293b':(total>0?'#0d9488':'#7f1d1d')}">
+            <div class="mc-label">Net Ayar</div>
+            <div class="mc-value" style="font-size:20px;color:${totalColor}">${totalDisplay}</div>
+        </div>
+        <div class="mini-card"><div class="mc-label">Kayıt Sayısı</div><div class="mc-value">${rows.length}</div></div>
+    </div>
+</div>
+
+<div class="detail-section">
+    <h3>📋 Ayar Geçmişi</h3>
+    ${rows.length === 0
+        ? '<div class="empty-state">Henüz ayar yok</div>'
+        : '<table><thead><tr><th>Uygulanan Tarih</th><th>Kayıt Zamanı</th><th>Miktar</th><th>Not</th><th></th></tr></thead><tbody>' +
+          rows.map(a => {
+              const sec = a.seconds;
+              const sign = sec > 0 ? '+' : '-';
+              const color = sec > 0 ? '#2dd4bf' : '#f87171';
+              let adjDateFmt = a.adjustment_date || '-';
+              try {
+                  const dt = new Date(a.adjustment_date);
+                  if (!isNaN(dt)) adjDateFmt = dt.getDate().toString().padStart(2,'0')+'/'+(dt.getMonth()+1).toString().padStart(2,'0')+'/'+dt.getFullYear();
+              } catch(e) {}
+              return '<tr>' +
+                  '<td><span style="color:#e2e8f0;font-weight:500">' + adjDateFmt + '</span></td>' +
+                  '<td class="time-range">' + (a.created_at || '-') + '</td>' +
+                  '<td><span style="color:' + color + ';font-weight:600">' + sign + formatTime(Math.abs(sec)) + '</span></td>' +
+                  '<td>' + (a.reason ? '<span style="color:#cbd5e1">' + escapeHtml(a.reason) + '</span>' : '<span style="color:#475569">-</span>') + '</td>' +
+                  "<td><button class=\"btn-sm btn-danger\" onclick=\"deleteAdjustment(" + a.id + ",'" + safeUser + "')\">Sil</button></td>" +
+              '</tr>';
+          }).join('') + '</tbody></table>'
+    }
+</div>`;
+        el.innerHTML = form;
+    } catch(e) {
+        el.innerHTML = '<div class="empty-state">Hata: ' + e.message + '</div>';
+    }
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function submitAdjustment(userId) {
+    const op = document.getElementById('adjOp').value;
+    const hours = parseFloat(document.getElementById('adjHours').value) || 0;
+    const minutes = parseFloat(document.getElementById('adjMinutes').value) || 0;
+    const reason = document.getElementById('adjReason').value.trim();
+    const adjustment_date = document.getElementById('adjDate').value;
+    if (hours <= 0 && minutes <= 0) {
+        alert('Saat veya dakika 0\'dan büyük olmalı');
+        return;
+    }
+    try {
+        const r = await fetch('/api/user/' + encodeURIComponent(userId) + '/adjustments', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({op, hours, minutes, reason, adjustment_date})
+        });
+        const d = await r.json();
+        if (!r.ok || d.error) {
+            alert('Hata: ' + (d.error || r.status));
+            return;
+        }
+        loadAdjustments(userId);
+    } catch(e) {
+        alert('Hata: ' + e.message);
+    }
+}
+
+async function deleteAdjustment(id, userId) {
+    if (!confirm('Bu ayar kaydı silinecek. Emin misiniz?')) return;
+    try {
+        await fetch('/api/adjustments/' + id, {method: 'DELETE'});
+        loadAdjustments(userId);
+    } catch(e) {
+        alert('Hata: ' + e.message);
+    }
+}
+
+// ===== LEAVES =====
+async function loadLeaves(userId) {
+    const el = document.getElementById('leavesTabContent');
+    if (!el) return;
+    el.innerHTML = '<div class="empty-state">Yükleniyor...</div>';
+    try {
+        const r = await fetch('/api/user/' + encodeURIComponent(userId) + '/leaves');
+        const d = await r.json();
+        const rows = d.leaves || [];
+        const types = d.types || {};
+        const total = d.total_days || 0;
+        const safeUser = userId.replace(/'/g, "\\'");
+        const today = todayStr();
+        const typeOptions = Object.entries(types).map(([k,v]) => `<option value="${k}">${v}</option>`).join('');
+        const typeIcons = {annual:'🏝️', sick:'🤒', holiday:'🎉', other:'📌'};
+
+        el.innerHTML = `
+<div class="detail-section">
+    <h3>➕ Yeni İzin / Tatil Ekle</h3>
+    <div style="background:#0a0f1a;border:1px solid #1e293b;border-radius:10px;padding:16px">
+        <div style="display:grid;grid-template-columns:140px 150px 150px 1fr auto;gap:10px;align-items:end">
+            <div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">Tür</div>
+                <select id="leaveType" style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:9px 10px;border-radius:8px;font-size:13px">${typeOptions}</select>
+            </div>
+            <div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">Başlangıç</div>
+                <input type="date" id="leaveStart" value="${today}" style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:9px 10px;border-radius:8px;font-size:13px">
+            </div>
+            <div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">Bitiş (dahil)</div>
+                <input type="date" id="leaveEnd" value="${today}" style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:9px 10px;border-radius:8px;font-size:13px">
+            </div>
+            <div>
+                <div style="font-size:11px;color:#64748b;margin-bottom:4px">Açıklama (opsiyonel)</div>
+                <input type="text" id="leaveReason" placeholder="Örn: Yıllık izin, ameliyat..." style="width:100%;background:#111827;border:1px solid #1e293b;color:#e2e8f0;padding:9px 10px;border-radius:8px;font-size:13px">
+            </div>
+            <button class="btn-primary" style="padding:10px 20px;font-size:13px;border:none;border-radius:8px;cursor:pointer;font-weight:600" onclick="submitLeave('${safeUser}')">Kaydet</button>
+        </div>
+        <div style="font-size:11px;color:#475569;margin-top:10px">💡 İzinli günler "Bugün inaktif" uyarısından ve "aktivite düşüşü" sinyalinden otomatik hariç tutulur. Bu günlerde çalışma göstergesi beklenmez.</div>
+    </div>
+</div>
+
+<div class="detail-section">
+    <h3>📊 Toplam</h3>
+    <div class="mini-grid">
+        <div class="mini-card"><div class="mc-label">Toplam İzin Günü</div><div class="mc-value">${total}</div></div>
+        <div class="mini-card"><div class="mc-label">Kayıt Sayısı</div><div class="mc-value">${rows.length}</div></div>
+    </div>
+</div>
+
+<div class="detail-section">
+    <h3>📋 İzin Geçmişi</h3>
+    ${rows.length === 0
+        ? '<div class="empty-state">Henüz izin kaydı yok</div>'
+        : '<table><thead><tr><th>Tür</th><th>Başlangıç</th><th>Bitiş</th><th>Gün</th><th>Açıklama</th><th></th></tr></thead><tbody>' +
+          rows.map(l => {
+              const icon = typeIcons[l.leave_type] || '📌';
+              const typeName = types[l.leave_type] || l.leave_type;
+              const fmtDate = (s) => {
+                  try { const dt = new Date(s); return dt.getDate().toString().padStart(2,'0')+'/'+(dt.getMonth()+1).toString().padStart(2,'0')+'/'+dt.getFullYear(); }
+                  catch(e) { return s; }
+              };
+              return '<tr>' +
+                  '<td>' + icon + ' ' + typeName + '</td>' +
+                  '<td>' + fmtDate(l.start_date) + '</td>' +
+                  '<td>' + fmtDate(l.end_date) + '</td>' +
+                  '<td><span style="color:#38bdf8;font-weight:600">' + l.days + ' gün</span></td>' +
+                  '<td>' + (l.reason ? '<span style="color:#cbd5e1">' + escapeHtml(l.reason) + '</span>' : '<span style="color:#475569">-</span>') + '</td>' +
+                  "<td><button class=\"btn-sm btn-danger\" onclick=\"deleteLeave(" + l.id + ",'" + safeUser + "')\">Sil</button></td>" +
+              '</tr>';
+          }).join('') + '</tbody></table>'
+    }
+</div>`;
+    } catch(e) {
+        el.innerHTML = '<div class="empty-state">Hata: ' + e.message + '</div>';
+    }
+}
+
+async function submitLeave(userId) {
+    const leave_type = document.getElementById('leaveType').value;
+    const start_date = document.getElementById('leaveStart').value;
+    const end_date = document.getElementById('leaveEnd').value;
+    const reason = document.getElementById('leaveReason').value.trim();
+    if (!start_date || !end_date) {
+        alert('Başlangıç ve bitiş tarihi zorunlu');
+        return;
+    }
+    try {
+        const r = await fetch('/api/user/' + encodeURIComponent(userId) + '/leaves', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({leave_type, start_date, end_date, reason})
+        });
+        const d = await r.json();
+        if (!r.ok || d.error) {
+            alert('Hata: ' + (d.error || r.status));
+            return;
+        }
+        loadLeaves(userId);
+    } catch(e) {
+        alert('Hata: ' + e.message);
+    }
+}
+
+async function deleteLeave(id, userId) {
+    if (!confirm('Bu izin kaydı silinecek. Emin misiniz?')) return;
+    try {
+        await fetch('/api/leaves/' + id, {method: 'DELETE'});
+        loadLeaves(userId);
+    } catch(e) {
+        alert('Hata: ' + e.message);
+    }
+}
+
+function closeModal() {
+    document.getElementById('userModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+// ===== SITES TAB =====
+let currentSitesUser = '';
+let currentSitesFilter = 'all';
+let sitesSort = 'last_visit';
+let sitesSortDir = 'desc';
+
+async function loadSites(userId, days) {
+    days = days || 7;
+    currentSitesUser = userId;
+    currentSitesFilter = 'all';
+    const el = document.getElementById('sitesTabContent');
+    el.innerHTML = '<div class="empty-state">Yükleniyor...</div>';
+    try {
+        const r = await fetch('/api/user/' + encodeURIComponent(userId) + '/sites?days=' + days);
+        const d = await r.json();
+        window._sitesData = d;
+        renderSites(d, days);
+    } catch(e) {
+        el.innerHTML = '<div class="empty-state">Hata: ' + e.message + '</div>';
+    }
+}
+
+function renderSites(d, days) {
+    const el = document.getElementById('sitesTabContent');
+    const stats = d.tag_stats || [];
+    const totalSec = stats.reduce((s,t) => s + (t.seconds||0), 0);
+
+    // Özet kartları
+    let cardsHtml = '<div class="mini-grid">';
+    stats.forEach(t => {
+        cardsHtml += `<div class="mini-card" style="border-color:${t.tag_color}"><div class="mc-label">${t.tag_icon} ${t.tag_name}</div><div class="mc-value" style="font-size:16px;color:${t.tag_color}">${formatTime(t.seconds)}</div><div style="font-size:10px;color:#64748b">${t.heartbeats} HB</div></div>`;
+    });
+    cardsHtml += '</div>';
+
+    // Stacked bar
+    let barHtml = '<div class="stacked-bar" style="margin-bottom:14px">';
+    stats.forEach(t => {
+        const pct = totalSec > 0 ? Math.max((t.seconds / totalSec) * 100, 2) : 0;
+        if (pct > 0) barHtml += `<div style="width:${pct}%;background:${t.tag_color}" title="${t.tag_icon} ${t.tag_name}: ${Math.round(pct)}%">${pct >= 8 ? Math.round(pct)+'%' : ''}</div>`;
+    });
+    barHtml += '</div>';
+
+    // Filter chips
+    let chipsHtml = '<div class="sites-filter"><select onchange="loadSites(currentSitesUser, this.value)" style="background:#0a0f1a;border:1px solid #1e293b;color:#e2e8f0;padding:6px 10px;border-radius:8px;font-size:12px;cursor:pointer">';
+    [['24h','Son 24 saat',1],['7g','Son 7 gün',7],['14g','Son 14 gün',14],['30g','Son 30 gün',30]].forEach(([label,text,val]) => {
+        chipsHtml += `<option value="${val}"${val==days?' selected':''}>${text}</option>`;
+    });
+    chipsHtml += '</select>';
+    chipsHtml += `<span class="tag-chip ${currentSitesFilter==='all'?'active':''}" onclick="filterSites('all')">Tümü</span>`;
+    stats.forEach(t => {
+        chipsHtml += `<span class="tag-chip ${currentSitesFilter===t.tag_name?'active':''}" onclick="filterSites('${t.tag_name.replace(/'/g,"\\'")}')" style="border-color:${t.tag_color}40">${t.tag_icon} ${t.tag_name}</span>`;
+    });
+    chipsHtml += '</div>';
+
+    // Domain tablosu
+    let domains = d.domains || [];
+    if (currentSitesFilter !== 'all') {
+        domains = domains.filter(dm => {
+            const tn = dm.tag ? dm.tag.tag_name : 'Etiketlenmemiş';
+            return tn === currentSitesFilter;
+        });
+    }
+    // Sıralama
+    domains.sort((a, b) => {
+        let va = a[sitesSort], vb = b[sitesSort];
+        if (sitesSort === 'last_visit' || sitesSort === 'first_visit') {
+            va = va || ''; vb = vb || '';
+            return sitesSortDir === 'desc' ? vb.localeCompare(va) : va.localeCompare(vb);
+        }
+        va = va || 0; vb = vb || 0;
+        return sitesSortDir === 'desc' ? vb - va : va - vb;
+    });
+
+    let tableHtml = `<table><thead><tr><th>Etiket</th><th>Site / URL</th><th style="cursor:pointer;user-select:none" onclick="sortSites('heartbeats')">HB ${sitesSort==='heartbeats'?(sitesSortDir==='desc'?'▼':'▲'):''}</th><th style="cursor:pointer;user-select:none" onclick="sortSites('seconds')">Süre ${sitesSort==='seconds'?(sitesSortDir==='desc'?'▼':'▲'):''}</th><th style="cursor:pointer;user-select:none" onclick="sortSites('visit_days')">Gün ${sitesSort==='visit_days'?(sitesSortDir==='desc'?'▼':'▲'):''}</th><th style="cursor:pointer;user-select:none" onclick="sortSites('last_visit')">Son Ziyaret ${sitesSort==='last_visit'?(sitesSortDir==='desc'?'▼':'▲'):''}</th></tr></thead><tbody>`;
+    domains.forEach(dm => {
+        const tag = dm.tag;
+        const badge = tag
+            ? `<span class="tag-badge" style="background:${tag.tag_color}20;color:${tag.tag_color}">${tag.tag_icon} ${tag.tag_name}</span>`
+            : '<span class="tag-badge" style="background:#33415520;color:#94a3b8">🏷️ Etiketlenmemiş</span>';
+        const url = dm.entity.startsWith('http') ? dm.entity : 'https://' + dm.entity;
+        let siteDisplay = `<a href="${url}" target="_blank" style="color:#38bdf8;text-decoration:none;font-size:12px;word-break:break-all">${dm.entity}</a>`;
+        tableHtml += `<tr><td>${badge}</td><td>${siteDisplay}</td><td>${dm.heartbeats}</td><td><span style="color:#2dd4bf">${formatTime(dm.seconds)}</span></td><td>${dm.visit_days}</td><td class="time-range">${dm.first_visit} — ${dm.last_visit}</td></tr>`;
+    });
+    tableHtml += '</tbody></table>';
+
+    // Günlük breakdown (collapsible)
+    const days_keys = Object.keys(d.daily || {}).sort().reverse();
+    let dailyHtml = '';
+    if (days_keys.length > 0) {
+        dailyHtml = '<div class="detail-section" style="margin-top:14px"><h3 style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'">📅 Günlük Detay ▾</h3><div style="display:none">';
+        const dnFull = {0:'Pazar',1:'Pazartesi',2:'Salı',3:'Çarşamba',4:'Perşembe',5:'Cuma',6:'Cumartesi'};
+        days_keys.forEach(day => {
+            const dt = new Date(day);
+            const entries = d.daily[day];
+            dailyHtml += `<div class="day-header">📅 ${dnFull[dt.getDay()]}, ${dt.getDate().toString().padStart(2,'0')}/${(dt.getMonth()+1).toString().padStart(2,'0')}</div>`;
+            dailyHtml += '<table><tbody>';
+            entries.forEach(e => {
+                const tag = e.tag;
+                const badge = tag ? `<span class="tag-badge" style="background:${tag.tag_color}20;color:${tag.tag_color};font-size:9px">${tag.tag_icon} ${tag.tag_name}</span>` : '';
+                dailyHtml += `<tr><td>${badge}</td><td style="font-size:12px">${e.entity}</td><td>${e.heartbeats}</td><td><span style="color:#2dd4bf">${formatTime(e.seconds)}</span></td></tr>`;
+            });
+            dailyHtml += '</tbody></table>';
+        });
+        dailyHtml += '</div></div>';
+    }
+
+    el.innerHTML = cardsHtml + barHtml + chipsHtml + tableHtml + dailyHtml;
+}
+
+function filterSites(tag) {
+    currentSitesFilter = tag;
+    if (window._sitesData) renderSites(window._sitesData, 7);
+}
+
+function sortSites(field) {
+    if (sitesSort === field) {
+        sitesSortDir = sitesSortDir === 'desc' ? 'asc' : 'desc';
+    } else {
+        sitesSort = field;
+        sitesSortDir = 'desc';
+    }
+    if (window._sitesData) renderSites(window._sitesData, 7);
+}
+
+// ===== TAGS MANAGEMENT =====
+let selectedColor = '#4ade80';
+let selectedIcon = '🏷️';
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('color-preset')) {
+        document.querySelectorAll('.color-preset').forEach(c => c.classList.remove('active'));
+        e.target.classList.add('active');
+        selectedColor = e.target.dataset.color;
+    }
+    if (e.target.classList.contains('icon-preset')) {
+        document.querySelectorAll('.icon-preset').forEach(c => c.classList.remove('active'));
+        e.target.classList.add('active');
+        selectedIcon = e.target.dataset.icon;
+    }
+});
+
+async function loadTags() {
+    const [tagsR, untaggedR] = await Promise.all([
+        fetch('/api/tags').then(r => r.json()),
+        fetch('/api/untagged-domains').then(r => r.json())
+    ]);
+    const groups = tagsR.tags || [];
+    const untagged = untaggedR.domains || [];
+
+    document.getElementById('tagGroups').innerHTML = groups.map((g, idx) => {
+        return `<div class="tag-group">
+            <div class="tag-group-header">
+                <h4><span style="color:${g.tag_color}">${g.tag_icon}</span> ${g.tag_name} <span style="font-size:11px;color:#64748b;font-weight:400">(${g.patterns.length} pattern)</span></h4>
+                <span class="tag-badge" style="background:${g.tag_color}20;color:${g.tag_color}">${g.tag_color}</span>
+            </div>
+            ${g.patterns.map(p => `<div class="pattern-row">
+                <span style="color:#cbd5e1">${p.domain_pattern}</span>
+                <button class="btn-sm btn-danger" onclick="deletePattern(${p.id})">Sil</button>
+            </div>`).join('')}
+            <div class="add-pattern-row">
+                <input type="text" placeholder="Yeni pattern ekle..." id="newPattern-${idx}">
+                <button onclick="addPattern('${g.tag_name.replace(/'/g,"\\'")}','${g.tag_color}','${g.tag_icon}','newPattern-${idx}')">Ekle</button>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Domain'den sadece host kısmını göster, full URL'yi title'da tut
+    document.getElementById('untaggedDomains').innerHTML = untagged.length === 0
+        ? '<div class="empty-state">Tüm domain\'ler etiketlenmiş 🎉</div>'
+        : '<div style="display:flex;flex-direction:column;gap:6px">' + untagged.map(domain => {
+            const options = groups.map(g => `<option value="${g.tag_name}|||${g.tag_color}|||${g.tag_icon}">${g.tag_icon} ${g.tag_name}</option>`).join('');
+            let shortName = domain;
+            try { shortName = new URL(domain.startsWith('http') ? domain : 'https://'+domain).hostname; } catch(e) {}
+            return `<div style="background:#111827;border:1px solid #1e293b;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:12px;max-width:100%;transition:border-color .15s" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1e293b'">
+                <span style="color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px" title="${domain}">${shortName}</span>
+                <select style="background:#0a0f1a;border:1px solid #1e293b;color:#e2e8f0;padding:4px 6px;border-radius:6px;font-size:10px;flex-shrink:0;cursor:pointer" onchange="assignDomain(this,'${domain.replace(/'/g,"\\'")}')">
+                    <option value="">Ata...</option>${options}
+                </select>
+            </div>`;
+        }).join('') + '</div>';
+}
+
+async function createTag() {
+    const name = document.getElementById('newTagName').value.trim();
+    const pattern = document.getElementById('newTagPattern').value.trim();
+    if (!name || !pattern) return alert('Tag adı ve pattern gerekli');
+    await fetch('/api/tags', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({tag_name: name, tag_color: selectedColor, tag_icon: selectedIcon, domain_pattern: pattern})
+    });
+    document.getElementById('newTagName').value = '';
+    document.getElementById('newTagPattern').value = '';
+    loadTags();
+}
+
+async function addPattern(tagName, tagColor, tagIcon, inputId) {
+    const input = document.getElementById(inputId);
+    const pattern = input.value.trim();
+    if (!pattern) return;
+    await fetch('/api/tags', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({tag_name: tagName, tag_color: tagColor, tag_icon: tagIcon, domain_pattern: pattern})
+    });
+    input.value = '';
+    loadTags();
+}
+
+async function deletePattern(id) {
+    if (!confirm('Bu pattern silinecek. Emin misiniz?')) return;
+    await fetch('/api/tags/' + id, {method: 'DELETE'});
+    loadTags();
+}
+
+async function assignDomain(sel, domain) {
+    const val = sel.value;
+    if (!val) return;
+    const [tagName, tagColor, tagIcon] = val.split('|||');
+    // Domain'den pattern çıkar (protocol kaldır)
+    const pattern = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    await fetch('/api/tags', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({tag_name: tagName, tag_color: tagColor, tag_icon: tagIcon, domain_pattern: pattern})
+    });
+    loadTags();
+}
+
+// ===== REPORTS =====
+let currentReportData = null;
+
+function todayStr() {
+    // TR yerel tarihi (UTC+3) — toISOString UTC verir, saat farkını eklemeliyiz
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 10);
+}
+
+function mondayOfWeek(dateStr) {
+    const d = new Date(dateStr);
+    const day = d.getDay(); 
+    const diff = (day === 0 ? -6 : 1 - day);
+    d.setDate(d.getDate() + diff);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 10);
+}
+
+function onReportTypeChange() {
+    const type = document.getElementById('reportType').value;
+    const singleWrap = document.getElementById('singleDateWrap');
+    const rangeWrap = document.getElementById('rangeDateWrap');
+    const label = document.getElementById('singleDateLabel');
+
+    if (type === 'range') {
+        singleWrap.style.display = 'none';
+        rangeWrap.style.display = 'block';
+        // Default: son 7 gün
+        const end = todayStr();
+        const startD = new Date();
+        startD.setDate(startD.getDate() - 6);
+        startD.setMinutes(startD.getMinutes() - startD.getTimezoneOffset());
+        const start = startD.toISOString().slice(0, 10);
+        if (!document.getElementById('reportStart').value) document.getElementById('reportStart').value = start;
+        if (!document.getElementById('reportEnd').value) document.getElementById('reportEnd').value = end;
+    } else {
+        singleWrap.style.display = 'block';
+        rangeWrap.style.display = 'none';
+        if (type === 'weekly') {
+            label.textContent = 'Hafta Başlangıcı (Pzt)';
+            document.getElementById('reportDate').value = mondayOfWeek(todayStr());
+        } else {
+            label.textContent = 'Tarih';
+            document.getElementById('reportDate').value = todayStr();
+        }
+    }
+}
+
+function initReports() {
+    const type = document.getElementById('reportType').value;
+    if (type === 'weekly') {
+        document.getElementById('reportDate').value = mondayOfWeek(todayStr());
+    } else {
+        document.getElementById('reportDate').value = todayStr();
+    }
+    loadReport();
+    loadReportHistory();
+}
+
+async function loadReportHistory() {
+    try {
+        const r = await fetch('/api/reports/dates');
+        const d = await r.json();
+        const dates = d.dates || [];
+        const dn = {0:'Paz',1:'Pzt',2:'Sal',3:'Car',4:'Per',5:'Cum',6:'Cmt'};
+        document.getElementById('reportHistory').innerHTML = dates.length === 0
+            ? '<div class="empty-state">Veri yok</div>'
+            : dates.map(dt => {
+                const day = new Date(dt.day);
+                const isToday = dt.day === new Date().toISOString().slice(0,10);
+                return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid rgba(30,41,59,.5);cursor:pointer;transition:all .15s" onmouseover="this.style.background='rgba(56,189,248,.04)'" onmouseout="this.style.background=''" onclick="document.getElementById('reportDate').value='${dt.day}';loadReport()">
+                    <div>
+                        <span style="font-size:12px;color:${isToday?'#4ade80':'#cbd5e1'};font-weight:${isToday?'600':'400'}">${dn[day.getDay()]} ${day.getDate().toString().padStart(2,'0')}/${(day.getMonth()+1).toString().padStart(2,'0')}</span>
+                        <span style="font-size:10px;color:#334155;margin-left:6px">${dt.users} kisi</span>
+                    </div>
+                    <span style="cursor:pointer;font-size:10px;color:#64748b;padding:3px 8px;border-radius:6px;border:1px solid #1e293b;transition:all .15s;font-weight:500" onmouseover="this.style.background='rgba(127,29,29,.3)';this.style.color='#fca5a5'" onmouseout="this.style.background='';this.style.color='#64748b'" onclick="event.stopPropagation();window.open('/api/reports/pdf?type=daily&date=${dt.day}','_blank')">PDF</span>
+                </div>`;
+            }).join('');
+    } catch(e) {}
+}
+
+async function loadReport() {
+    const type = document.getElementById('reportType').value;
+    const el = document.getElementById('reportContent');
+    const summaryEl = document.getElementById('reportSummary');
+    el.innerHTML = '<div class="empty-state">Yükleniyor...</div>';
+    summaryEl.innerHTML = '';
+
+    let url;
+    let ctx = { type };
+    if (type === 'daily') {
+        const date = document.getElementById('reportDate').value;
+        if (!date) return;
+        url = '/api/reports/daily?date=' + date;
+        ctx.date = date;
+    } else if (type === 'weekly') {
+        const date = document.getElementById('reportDate').value;
+        if (!date) return;
+        url = '/api/reports/weekly?week_start=' + date;
+        ctx.date = date;
+    } else {
+        const start = document.getElementById('reportStart').value;
+        const end = document.getElementById('reportEnd').value;
+        if (!start || !end) { el.innerHTML = '<div class="empty-state">Başlangıç ve bitiş tarihi girin</div>'; return; }
+        url = '/api/reports/range?start=' + start + '&end=' + end;
+        ctx.start = start;
+        ctx.end = end;
+    }
+
+    try {
+        const r = await fetch(url);
+        const ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            throw new Error('Sunucu JSON döndürmedi (HTTP ' + r.status + ')');
+        }
+        const d = await r.json();
+        if (d.error) throw new Error(d.error);
+        ctx.data = d;
+        currentReportData = ctx;
+        if (type === 'daily') renderDailyReport(d);
+        else if (type === 'weekly') renderWeeklyReport(d);
+        else renderRangeReport(d);
+    } catch(e) {
+        el.innerHTML = '<div class="empty-state">Hata: ' + e.message + '</div>';
+    }
+}
+
+function renderDailyReport(d) {
+    const dn = {0:'Pazar',1:'Pazartesi',2:'Sali',3:'Carsamba',4:'Persembe',5:'Cuma',6:'Cumartesi'};
+    const dt = new Date(d.date);
+    document.getElementById('reportTitle').textContent = `${dn[dt.getDay()]}, ${dt.getDate().toString().padStart(2,'0')}/${(dt.getMonth()+1).toString().padStart(2,'0')}/${dt.getFullYear()}`;
+
+    document.getElementById('reportSummary').innerHTML = `<div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card green"><div class="label">Aktif</div><div class="value">${d.total_users}</div></div>
+        <div class="stat-card teal"><div class="label">IDE Süre</div><div class="value" style="font-size:20px">${formatTime(d.total_coding_seconds)}</div></div>
+        <div class="stat-card red"><div class="label">Tarayıcı</div><div class="value" style="font-size:20px">${formatTime(d.total_browsing_seconds)}</div></div>
+        <div class="stat-card pink"><div class="label">AI Süre</div><div class="value" style="font-size:20px">${formatTime(d.total_ai_seconds)}</div></div>
+    </div>`;
+
+    document.getElementById('reportContent').innerHTML = `<table><thead><tr>
+        <th>#</th><th>Kullanıcı</th><th>IDE Süre</th><th>Tarayıcı</th><th>Çalışma Saati</th><th>Projeler</th><th>Diller</th><th>Editörler</th>
+    </tr></thead><tbody>${d.users.map((u, i) => `<tr>
+        <td style="color:#475569">${i+1}</td>
+        <td>${ulink(u.user_id)}</td>
+        <td><span style="color:#2dd4bf;font-weight:600">${formatTime(u.ide_coding_seconds)}</span></td>
+        <td><span style="color:#f87171">${formatTime(u.browsing_seconds)}</span></td>
+        <td class="time-range">${u.first_active} - ${u.last_active}</td>
+        <td>${tags(u.projects,'tag-project')}</td>
+        <td>${tags(u.languages,'tag-lang')}</td>
+        <td>${tags(u.editors,'tag-editor')}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function renderWeeklyReport(d) {
+    const dn = {0:'Pazar',1:'Pazartesi',2:'Salı',3:'Çarşamba',4:'Perşembe',5:'Cuma',6:'Cumartesi'};
+    const ws = new Date(d.week_start), we = new Date(d.week_end);
+    document.getElementById('reportTitle').textContent = `📊 Haftalık: ${ws.getDate().toString().padStart(2,'0')}/${(ws.getMonth()+1).toString().padStart(2,'0')} - ${we.getDate().toString().padStart(2,'0')}/${(we.getMonth()+1).toString().padStart(2,'0')}`;
+
+    document.getElementById('reportSummary').innerHTML = `<div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card green"><div class="label">Aktif Kullanıcı</div><div class="value">${d.total_users}</div></div>
+        <div class="stat-card teal"><div class="label">IDE Süre</div><div class="value" style="font-size:22px">${formatTime(d.total_coding_seconds)}</div></div>
+        <div class="stat-card red"><div class="label">Tarayıcı</div><div class="value" style="font-size:22px">${formatTime(d.total_browsing_seconds)}</div></div>
+        <div class="stat-card pink"><div class="label">AI Süre</div><div class="value" style="font-size:22px">${formatTime(d.total_ai_seconds)}</div></div>
+        <div class="stat-card blue"><div class="label">Verimlilik</div><div class="value">%${d.team_productivity}</div></div>
+    </div>`;
+
+    document.getElementById('reportContent').innerHTML = `<table><thead><tr>
+        <th>#</th><th>Kullanıcı</th><th>Aktif Gün</th><th>IDE Süre</th><th>Tarayıcı</th><th>🤖 AI</th><th>Verimlilik</th><th>Projeler</th><th>Diller</th>
+    </tr></thead><tbody>${d.users.map((u, i) => {
+        const prodColor = u.productivity >= 70 ? '#4ade80' : u.productivity >= 40 ? '#fbbf24' : '#f87171';
+        return `<tr>
+        <td style="color:#475569">${i+1}</td>
+        <td>${ulink(u.user_id)}</td>
+        <td>${u.active_days}/7</td>
+        <td><span style="color:#2dd4bf;font-weight:600">${formatTime(u.ide_coding_seconds)}</span></td>
+        <td><span style="color:#f87171">${formatTime(u.browsing_seconds)}</span></td>
+        <td><span style="color:#f472b6">${formatTime(u.ai_coding_seconds)}</span></td>
+        <td><span style="color:${prodColor};font-weight:600">%${u.productivity}</span></td>
+        <td>${tags(u.projects,'tag-project')}</td>
+        <td>${tags(u.languages,'tag-lang')}</td>
+    </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+function renderRangeReport(d) {
+    const s = new Date(d.range_start), e = new Date(d.range_end);
+    document.getElementById('reportTitle').textContent = `🗓️ ${s.getDate().toString().padStart(2,'0')}/${(s.getMonth()+1).toString().padStart(2,'0')}/${s.getFullYear()} - ${e.getDate().toString().padStart(2,'0')}/${(e.getMonth()+1).toString().padStart(2,'0')}/${e.getFullYear()}  (${d.days} gün)`;
+
+    document.getElementById('reportSummary').innerHTML = `<div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card green"><div class="label">Aktif Kullanıcı</div><div class="value">${d.total_users}</div></div>
+        <div class="stat-card teal"><div class="label">IDE Süre</div><div class="value" style="font-size:22px">${formatTime(d.total_coding_seconds)}</div></div>
+        <div class="stat-card red"><div class="label">Tarayıcı</div><div class="value" style="font-size:22px">${formatTime(d.total_browsing_seconds)}</div></div>
+        <div class="stat-card pink"><div class="label">AI Süre</div><div class="value" style="font-size:22px">${formatTime(d.total_ai_seconds)}</div></div>
+        <div class="stat-card blue"><div class="label">Verimlilik</div><div class="value">%${d.team_productivity}</div></div>
+    </div>`;
+
+    document.getElementById('reportContent').innerHTML = `<table><thead><tr>
+        <th>#</th><th>Kullanıcı</th><th>Aktif / ${d.days}g</th><th>IDE Süre</th><th>Tarayıcı</th><th>🤖 AI</th><th>Verimlilik</th><th>Projeler</th><th>Diller</th>
+    </tr></thead><tbody>${d.users.map((u, i) => {
+        const prodColor = u.productivity >= 70 ? '#4ade80' : u.productivity >= 40 ? '#fbbf24' : '#f87171';
+        return `<tr>
+        <td style="color:#475569">${i+1}</td>
+        <td>${ulink(u.user_id)}</td>
+        <td>${u.active_days}/${d.days}</td>
+        <td><span style="color:#2dd4bf;font-weight:600">${formatTime(u.ide_coding_seconds)}</span></td>
+        <td><span style="color:#f87171">${formatTime(u.browsing_seconds)}</span></td>
+        <td><span style="color:#f472b6">${formatTime(u.ai_coding_seconds)}</span></td>
+        <td><span style="color:${prodColor};font-weight:600">%${u.productivity}</span></td>
+        <td>${tags(u.projects,'tag-project')}</td>
+        <td>${tags(u.languages,'tag-lang')}</td>
+    </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+function exportPdf() {
+    // Mevcut dropdown + input değerlerinden direkt oku, stale cache kullanma
+    const type = document.getElementById('reportType').value;
+    let url;
+    if (type === 'daily') {
+        const date = document.getElementById('reportDate').value;
+        if (!date) return alert('Tarih seçin');
+        url = '/api/reports/pdf?type=daily&date=' + date;
+    } else if (type === 'weekly') {
+        const date = document.getElementById('reportDate').value;
+        if (!date) return alert('Hafta başı tarihi seçin');
+        url = '/api/reports/pdf?type=weekly&date=' + date;
+    } else {
+        const start = document.getElementById('reportStart').value;
+        const end = document.getElementById('reportEnd').value;
+        if (!start || !end) return alert('Başlangıç ve bitiş tarihi girin');
+        url = '/api/reports/pdf?type=range&start=' + start + '&end=' + end;
+    }
+    window.open(url, '_blank');
+}
+
+// Init
+loadDashboard();
+setInterval(() => { if(currentPage === 'dashboard') { loadDashboard(); } }, 60000);
+setInterval(loadRealtime, 15000);
+</script>
+</body>
+</html>

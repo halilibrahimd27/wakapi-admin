@@ -1,0 +1,35 @@
+# ───── Ortam değişkenleri & secret'lar ─────
+.env
+.env.local
+.env.*.local
+*.secret
+prometheus/wakapi.token
+
+# ───── Backup arşivleri ─────
+backups/
+*.sql
+*.sql.gz
+*.dump
+
+# ───── Python (admin/) ─────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ───── Editör / OS ─────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ───── Docker / runtime ─────
+*.log
+data/
