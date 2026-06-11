@@ -143,7 +143,7 @@ def init_db():
         cur.execute("SELECT COUNT(*) FROM domain_tags")
         if cur.fetchone()[0] == 0:
             defaults = [
-                ('İş', '#4ade80', '💼', 'aysbulut.com'),
+                ('İş', '#4ade80', '💼', 'domain.com'),
                 ('İş', '#4ade80', '💼', 'github.com'),
                 ('İş', '#4ade80', '💼', 'gitlab.com'),
                 ('İş', '#4ade80', '💼', 'stackoverflow.com'),
@@ -308,7 +308,7 @@ def users_page():
 
 @app.route('/set-view-user')
 def set_view_user():
-    return redirect('https://wakapi.aysbulut.com')
+    return redirect('https://wakapi.domain.com')
 
 # ───────────── REALTIME — Şu an aktif olanlar ─────────────
 def _compute_realtime():
