@@ -19,7 +19,7 @@ lines, line_no, cursor_pos, line_deletions, line_additions, project_root_count
 
 - `type` değerleri: `'file'` (26K), `'domain'` (49K), `'app'` (3K)
 - `category` değerleri: `'browsing'`, `'coding'`, `'ai coding'`, `'building'`, `'debugging'`, `'writing docs'`, `'writing tests'`, `'code reviewing'`
-- `type='domain'` olan entity'ler sadece domain düzeyinde: `https://wakapi.aysbulut.com`, `https://www.youtube.com` gibi. Full URL path YOK.
+- `type='domain'` olan entity'ler sadece domain düzeyinde: `https://wakapi.domain.com`, `https://www.youtube.com` gibi. Full URL path YOK.
 
 ### Mevcut AI Tespit Sistemi:
 ```python
@@ -79,14 +79,14 @@ CREATE TABLE IF NOT EXISTS domain_tags (
 ```
 
 Domain pattern matching mantığı: entity içinde `domain_pattern` geçiyorsa o tag'e ait sayılır.
-Örnek: pattern `aysbulut.com` → `https://crm.aysbulut.com`, `https://wakapi.aysbulut.com` hepsi eşleşir.
+Örnek: pattern `domain.com` → `https://x.domain.com`, `https://wakapi.domain.com` hepsi eşleşir.
 Örnek: pattern `127.0.0.1` → `http://127.0.0.1:59838`, `http://127.0.0.1:54585` hepsi eşleşir.
 
 **Varsayılan tag'ler (ilk çalışmada INSERT et, varsa atla):**
 
 | tag_name | tag_color | tag_icon | domain_pattern örnekleri |
 |----------|-----------|----------|--------------------------|
-| İş | #4ade80 | 💼 | aysbulut.com, github.com, gitlab.com, stackoverflow.com, localhost, 127.0.0.1, 172., 192.168., 10. |
+| İş | #4ade80 | 💼 | domain.com, github.com, gitlab.com, stackoverflow.com, localhost, 127.0.0.1, 172., 192.168., 10. |
 | Eğlence | #f87171 | 🎮 | youtube.com, netflix.com, twitch.tv, reddit.com, haber7.com, flo.com.tr |
 | Sosyal Medya | #a78bfa | 📱 | instagram.com, twitter.com, x.com, linkedin.com, facebook.com |
 | AI Araçları | #f472b6 | 🤖 | chatgpt.com, claude.ai, gemini.google.com, openrouter.ai, notebooklm.google.com, copilot.microsoft.com |
