@@ -129,7 +129,7 @@ Bu repo, **Wakapi**'yi kişisel kullanım sınırının dışına taşıyıp **k
 6. **İzinler** — gün bazlı izin tanımlama (`leaves` tablosu).
 
 ### Tag Yönetim Sayfası (`/tags`)
-- Pattern bazlı domain matching: `aysbulut.com` pattern'i `https://crm.aysbulut.com`'u da yakalar.
+- Pattern bazlı domain matching: `domain.com` pattern'i `https://x.domain.com`'u da yakalar.
 - Renk + emoji ikon ile özelleştirme.
 - "Etiketlenmemiş Domain'ler" bölümü — son 30 günde görülüp hiçbir tag'e uymayanlar.
 - Default tag'ler init'te seed edilir; istediğinizi silip ekleyebilirsiniz.
